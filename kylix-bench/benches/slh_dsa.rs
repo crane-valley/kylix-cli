@@ -3,7 +3,7 @@
 //! Only benchmarks fast (-f) variants to keep CI times reasonable.
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use kylix_pqc::slh_dsa::{SlhDsaShake128f, SlhDsaShake192f, SlhDsaShake256f, Signer};
+use kylix_pqc::slh_dsa::{Signer, SlhDsaShake128f, SlhDsaShake192f, SlhDsaShake256f};
 use rand::rng;
 
 const MESSAGE: &[u8] = b"Benchmark message for SLH-DSA signature testing";

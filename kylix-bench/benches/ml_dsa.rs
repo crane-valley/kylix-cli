@@ -15,9 +15,7 @@ fn bench_ml_dsa_44(c: &mut Criterion) {
 
     let (sk, vk) = MlDsa44::keygen(&mut rng()).unwrap();
 
-    group.bench_function("sign", |b| {
-        b.iter(|| MlDsa44::sign(&sk, MESSAGE).unwrap())
-    });
+    group.bench_function("sign", |b| b.iter(|| MlDsa44::sign(&sk, MESSAGE).unwrap()));
 
     let sig = MlDsa44::sign(&sk, MESSAGE).unwrap();
 
@@ -37,9 +35,7 @@ fn bench_ml_dsa_65(c: &mut Criterion) {
 
     let (sk, vk) = MlDsa65::keygen(&mut rng()).unwrap();
 
-    group.bench_function("sign", |b| {
-        b.iter(|| MlDsa65::sign(&sk, MESSAGE).unwrap())
-    });
+    group.bench_function("sign", |b| b.iter(|| MlDsa65::sign(&sk, MESSAGE).unwrap()));
 
     let sig = MlDsa65::sign(&sk, MESSAGE).unwrap();
 
@@ -59,9 +55,7 @@ fn bench_ml_dsa_87(c: &mut Criterion) {
 
     let (sk, vk) = MlDsa87::keygen(&mut rng()).unwrap();
 
-    group.bench_function("sign", |b| {
-        b.iter(|| MlDsa87::sign(&sk, MESSAGE).unwrap())
-    });
+    group.bench_function("sign", |b| b.iter(|| MlDsa87::sign(&sk, MESSAGE).unwrap()));
 
     let sig = MlDsa87::sign(&sk, MESSAGE).unwrap();
 

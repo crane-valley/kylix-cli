@@ -1,7 +1,7 @@
 //! ML-KEM benchmarks
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use kylix_pqc::ml_kem::{Kem, MlKem512, MlKem768, MlKem1024};
+use kylix_pqc::ml_kem::{Kem, MlKem1024, MlKem512, MlKem768};
 use rand::rng;
 
 fn bench_ml_kem_512(c: &mut Criterion) {
@@ -19,9 +19,7 @@ fn bench_ml_kem_512(c: &mut Criterion) {
 
     let (ct, _ss) = MlKem512::encaps(&ek, &mut rng()).unwrap();
 
-    group.bench_function("decaps", |b| {
-        b.iter(|| MlKem512::decaps(&dk, &ct).unwrap())
-    });
+    group.bench_function("decaps", |b| b.iter(|| MlKem512::decaps(&dk, &ct).unwrap()));
 
     group.finish();
 }
@@ -41,9 +39,7 @@ fn bench_ml_kem_768(c: &mut Criterion) {
 
     let (ct, _ss) = MlKem768::encaps(&ek, &mut rng()).unwrap();
 
-    group.bench_function("decaps", |b| {
-        b.iter(|| MlKem768::decaps(&dk, &ct).unwrap())
-    });
+    group.bench_function("decaps", |b| b.iter(|| MlKem768::decaps(&dk, &ct).unwrap()));
 
     group.finish();
 }
@@ -70,5 +66,10 @@ fn bench_ml_kem_1024(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_ml_kem_512, bench_ml_kem_768, bench_ml_kem_1024);
+criterion_group!(
+    benches,
+    bench_ml_kem_512,
+    bench_ml_kem_768,
+    bench_ml_kem_1024
+);
 criterion_main!(benches);
