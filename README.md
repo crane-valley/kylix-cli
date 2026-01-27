@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/crane-valley/kylix-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/crane-valley/kylix-cli/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/crane-valley/kylix-cli)](https://github.com/crane-valley/kylix-cli/releases/latest)
+[![Website](https://img.shields.io/badge/Website-kylix--pqc.dev-blue)](https://kylix-pqc.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Command-line interface for post-quantum cryptography operations using the [Kylix](https://github.com/crane-valley/kylix) library.
