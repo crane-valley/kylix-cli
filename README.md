@@ -7,6 +7,13 @@
 
 Command-line interface for post-quantum cryptography operations using the [Kylix](https://github.com/crane-valley/kylix) library.
 
+## Security
+
+> [!WARNING]
+> This CLI uses the [Kylix](https://github.com/crane-valley/kylix) library, which is experimental and has **NOT been audited**. It is **NOT intended for production use**.
+
+See [SECURITY.md](https://github.com/crane-valley/kylix/blob/main/SECURITY.md) for security policy and vulnerability reporting.
+
 ## Installation
 
 ### Pre-built Binaries
@@ -108,13 +115,6 @@ kylix bench -a ml-kem-768 --compare
 - `hex` - Hexadecimal encoding (default)
 - `base64` - Base64 encoding
 - `pem` - PEM format with headers
-
-## Security
-
-> [!WARNING]
-> This CLI uses the [Kylix](https://github.com/crane-valley/kylix) library, which is experimental and has **NOT been audited**. It is **NOT intended for production use**.
-
-See [SECURITY.md](https://github.com/crane-valley/kylix/blob/main/SECURITY.md) for security policy and vulnerability reporting.
 
 ## License
 
