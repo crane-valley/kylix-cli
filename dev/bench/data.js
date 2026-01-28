@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1769588385023,
+  "lastUpdate": 1769588408392,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -9489,6 +9489,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 4659085,
             "range": "± 700276",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bd93f8d240d2d123889d3f4b0a37ece46d5d223d",
+          "message": "docs: clarify release process in CLAUDE.md (#22)\n\n* docs: clarify release process in CLAUDE.md\n\ncargo-dist creates the GitHub Release automatically from a tag.\nDo not use `gh release create` as it conflicts with cargo-dist.\n\n* docs: clarify version/tag relationship per review",
+          "timestamp": "2026-01-28T17:13:46+09:00",
+          "tree_id": "b36733c3bd75346adc4086c311cbc42b65789e21",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/bd93f8d240d2d123889d3f4b0a37ece46d5d223d"
+        },
+        "date": 1769588407276,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 52329,
+            "range": "± 3571",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 307317,
+            "range": "± 87410",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 60240,
+            "range": "± 15450",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 109200,
+            "range": "± 16096",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 311221,
+            "range": "± 60655",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 97959,
+            "range": "± 11711",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 156070,
+            "range": "± 16881",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 311709,
+            "range": "± 45752",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 165319,
+            "range": "± 30417",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 14665,
+            "range": "± 4334",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 14475,
+            "range": "± 2942",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 15066,
+            "range": "± 1967",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 26304,
+            "range": "± 4305",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 21761,
+            "range": "± 6825",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 30953,
+            "range": "± 4655",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 62952,
+            "range": "± 53477",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 60312,
+            "range": "± 32639",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 62608,
+            "range": "± 18487",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 3318875,
+            "range": "± 1410575",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 64905812,
+            "range": "± 18034553",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 3377808,
+            "range": "± 315849",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 3453005,
+            "range": "± 731206",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 91142062,
+            "range": "± 24178416",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 5001018,
+            "range": "± 1019168",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 9112441,
+            "range": "± 1114161",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 223671833,
+            "range": "± 33808910",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 4804979,
+            "range": "± 494907",
             "unit": "ns/iter"
           }
         ]
