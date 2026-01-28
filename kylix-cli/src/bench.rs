@@ -701,25 +701,31 @@ fn format_comparison_table(
         ));
     }
 
+    // Check if OpenSSL was detected
+    let has_openssl = external_results.iter().any(|r| r.tool_name == "OpenSSL");
+
     match report_format {
-        ReportFormat::Markdown => format_comparison_markdown(&by_algo),
-        ReportFormat::Json => format_comparison_json(kylix_results, external_results),
-        ReportFormat::Text => format_comparison_text(&by_algo),
+        ReportFormat::Markdown => format_comparison_markdown(&by_algo, has_openssl),
+        ReportFormat::Json => format_comparison_json(kylix_results, external_results, has_openssl),
+        ReportFormat::Text => format_comparison_text(&by_algo, has_openssl),
     }
 }
 
 fn format_comparison_text(
     by_algo: &std::collections::HashMap<String, Vec<(&str, &str, f64)>>,
+    has_openssl: bool,
 ) -> String {
     let mut output = String::new();
     output.push_str("Kylix Benchmark Comparison\n");
     output.push_str("==========================\n\n");
 
-    // Add fairness note
-    output.push_str("Note: OpenSSL benchmarks include process startup and file I/O overhead\n");
-    output.push_str("      (each operation spawns a new process). liboqs uses its native\n");
-    output.push_str("      speed_kem/speed_sig tools for fair in-process comparison.\n");
-    output.push_str("      Kylix benchmarks run in-process with no I/O overhead.\n\n");
+    // Add fairness note only when OpenSSL is detected
+    if has_openssl {
+        output.push_str("Note: OpenSSL benchmarks include process startup and file I/O overhead\n");
+        output.push_str("      (each operation spawns a new process). liboqs uses its native\n");
+        output.push_str("      speed_kem/speed_sig tools for fair in-process comparison.\n");
+        output.push_str("      Kylix benchmarks run in-process with no I/O overhead.\n\n");
+    }
 
     for (algo, results) in by_algo {
         output.push_str(&format!("{}\n", algo));
@@ -772,16 +778,20 @@ fn format_comparison_text(
 
 fn format_comparison_markdown(
     by_algo: &std::collections::HashMap<String, Vec<(&str, &str, f64)>>,
+    has_openssl: bool,
 ) -> String {
     let mut output = String::new();
     output.push_str("# Kylix Benchmark Comparison\n\n");
 
-    // Add fairness note
-    output
-        .push_str("> **Note:** OpenSSL benchmarks include process startup and file I/O overhead\n");
-    output.push_str("> (each operation spawns a new process). liboqs uses its native\n");
-    output.push_str("> `speed_kem`/`speed_sig` tools for fair in-process comparison.\n");
-    output.push_str("> Kylix benchmarks run in-process with no I/O overhead.\n\n");
+    // Add fairness note only when OpenSSL is detected
+    if has_openssl {
+        output.push_str(
+            "> **Note:** OpenSSL benchmarks include process startup and file I/O overhead\n",
+        );
+        output.push_str("> (each operation spawns a new process). liboqs uses its native\n");
+        output.push_str("> `speed_kem`/`speed_sig` tools for fair in-process comparison.\n");
+        output.push_str("> Kylix benchmarks run in-process with no I/O overhead.\n\n");
+    }
 
     for (algo, results) in by_algo {
         output.push_str(&format!("## {}\n\n", algo));
@@ -833,6 +843,7 @@ fn format_comparison_markdown(
 fn format_comparison_json(
     kylix_results: &[BenchmarkResult],
     external_results: &[ExternalBenchResult],
+    has_openssl: bool,
 ) -> String {
     use serde_json::json;
 
@@ -867,10 +878,16 @@ fn format_comparison_json(
         })
         .collect();
 
-    let result = json!({
-        "disclaimer": "OpenSSL benchmarks include process startup and file I/O overhead (each operation spawns a new process). liboqs uses its native speed_kem/speed_sig tools for fair in-process comparison. Kylix benchmarks run in-process with no I/O overhead.",
-        "results": kylix.into_iter().chain(external).collect::<Vec<_>>()
-    });
+    let result = if has_openssl {
+        json!({
+            "disclaimer": "OpenSSL benchmarks include process startup and file I/O overhead (each operation spawns a new process). liboqs uses its native speed_kem/speed_sig tools for fair in-process comparison. Kylix benchmarks run in-process with no I/O overhead.",
+            "results": kylix.into_iter().chain(external).collect::<Vec<_>>()
+        })
+    } else {
+        json!({
+            "results": kylix.into_iter().chain(external).collect::<Vec<_>>()
+        })
+    };
     serde_json::to_string_pretty(&result).expect(
         "Failed to serialize benchmark comparison JSON; data structure should be serializable",
     )
