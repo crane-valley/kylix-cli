@@ -96,6 +96,22 @@ kylix bench -a ml-kem-768 -i 1000
 kylix bench -a ml-kem-768 --compare
 ```
 
+### Shell Completions
+
+```sh
+# Bash
+kylix completions bash > ~/.local/share/bash-completion/completions/kylix
+
+# Zsh (add ~/.zfunc to fpath in .zshrc)
+kylix completions zsh > ~/.zfunc/_kylix
+
+# Fish
+kylix completions fish > ~/.config/fish/completions/kylix.fish
+
+# PowerShell (add to $PROFILE)
+kylix completions powershell >> $PROFILE
+```
+
 ## Supported Algorithms
 
 | Algorithm | Type | NIST Level | Standard |
