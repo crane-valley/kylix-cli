@@ -106,11 +106,14 @@ jobs:
       - name: Run external tool comparison
         env:
           LIBOQS_DIR: /tmp/liboqs/build
+          CARGO_TERM_COLOR: never
         run: |
-          output=$(cargo run -p kylix-cli --features bench -- bench --compare --with liboqs -a ml-kem-768 -i 100 --report markdown 2>&1)
-          echo "$output" | tee bench-result.md
+          # Build first to separate compile output from benchmark output
+          cargo build -p kylix-cli --features bench --quiet
+          # Run benchmark and capture only program output
+          cargo run -p kylix-cli --features bench --quiet -- bench --compare --with liboqs -a ml-kem-768 -i 100 --report markdown | tee bench-result.md
           # Fail if liboqs was not detected (output should contain "liboqs" in the table)
-          echo "$output" | grep -q "liboqs" || { echo "Error: liboqs not detected in benchmark output"; exit 1; }
+          grep -q "liboqs" bench-result.md || { echo "Error: liboqs not detected in benchmark output"; exit 1; }
 
       - name: Post benchmark results to PR
         env:
