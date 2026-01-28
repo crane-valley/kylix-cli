@@ -21,9 +21,10 @@ Before committing or creating a PR, always run:
 
 ## Release
 
-- Create a GitHub Release with tag `vX.Y.Z` to trigger cargo-dist binary builds
 - Ensure `Cargo.toml` version matches the tag before release
-- Binaries are distributed via cargo-dist (shell/PowerShell installers)
+- Create a **tag only** with `git tag vX.Y.Z && git push origin vX.Y.Z`
+  - Do NOT use `gh release create` - cargo-dist creates the release automatically
+- cargo-dist will build binaries and create the GitHub Release with installers
 
 ## Dependencies
 
