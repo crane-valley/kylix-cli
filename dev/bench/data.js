@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1769571069141,
+  "lastUpdate": 1769571092270,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -5583,6 +5583,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 6200304,
             "range": "± 1073013",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bfb26e7c8fb5d48d4ab59c5f56bf935cb5471199",
+          "message": "fix: use fixed seed for ML-DSA benchmark stability (#15)\n\n* fix: use fixed seed for ML-DSA benchmark stability\n\nUse a seeded RNG for keygen in sign/verify benchmarks to eliminate\nvariance from rejection sampling. The same key is now generated\nacross benchmark runs, ensuring consistent rejection sampling paths.\n\nThis addresses the benchmark instability seen in CI where ML-DSA-65\nsign times varied significantly (e.g., 170ms vs 674ms).\n\n* fix: use fixed seed for ML-KEM benchmark consistency\n\nApply the same seeded RNG approach to ML-KEM benchmarks for\nconsistency with ML-DSA and improved reproducibility across\nCI runs.\n\n* fix: use fixed seed for SLH-DSA benchmark consistency\n\nApply the same seeded RNG approach to SLH-DSA benchmarks for\nconsistency across all algorithm benchmarks.\n\n* ci: reduce benchmark alert threshold to 150%\n\nWith fixed seeds eliminating rejection sampling variance, we can\nuse a stricter threshold to detect actual performance regressions.\n\n* style: consolidate imports and simplify comments\n\nAddress review feedback:\n- Consolidate rand imports into single use statement\n- Remove misleading hex comment from seed value",
+          "timestamp": "2026-01-28T12:25:08+09:00",
+          "tree_id": "59726eda5aada9da1c4a668bab1d4bb3805f5b81",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/bfb26e7c8fb5d48d4ab59c5f56bf935cb5471199"
+        },
+        "date": 1769571090583,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 56809,
+            "range": "± 2842",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 445528,
+            "range": "± 63801",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 65733,
+            "range": "± 10876",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 124173,
+            "range": "± 23496",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 261748,
+            "range": "± 58951",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 94096,
+            "range": "± 10832",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 149982,
+            "range": "± 16291",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 326198,
+            "range": "± 48093",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 152482,
+            "range": "± 12401",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 13618,
+            "range": "± 1013",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 12801,
+            "range": "± 1219",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 15197,
+            "range": "± 4308",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 24862,
+            "range": "± 4260",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 24399,
+            "range": "± 5400",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 24593,
+            "range": "± 3540",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 51638,
+            "range": "± 11094",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 34685,
+            "range": "± 5396",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 44633,
+            "range": "± 7316",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 2356823,
+            "range": "± 355698",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 63457521,
+            "range": "± 7610330",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 3189562,
+            "range": "± 349873",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 3453479,
+            "range": "± 305670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 85257812,
+            "range": "± 5039763",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 4459479,
+            "range": "± 146488",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 11282430,
+            "range": "± 2060471",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 221464937,
+            "range": "± 38993855",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 5161418,
+            "range": "± 741779",
             "unit": "ns/iter"
           }
         ]
