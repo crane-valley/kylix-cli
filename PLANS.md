@@ -4,6 +4,14 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 
 ---
 
+## In Progress
+
+| Task | Priority | Notes |
+|------|----------|-------|
+| Tool Detection Refactor | HIGH | PR #25 - Environment variable support for OpenSSL/liboqs |
+
+---
+
 ## Not Started
 
 | Task | Priority | Notes |
