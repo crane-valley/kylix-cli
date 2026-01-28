@@ -223,23 +223,6 @@ impl Algorithm {
         )
     }
 
-    /// Returns true if this is a signature algorithm
-    #[allow(dead_code)]
-    fn is_dsa(&self) -> bool {
-        matches!(
-            self,
-            Algorithm::MlDsa44
-                | Algorithm::MlDsa65
-                | Algorithm::MlDsa87
-                | Algorithm::SlhDsaShake128s
-                | Algorithm::SlhDsaShake128f
-                | Algorithm::SlhDsaShake192s
-                | Algorithm::SlhDsaShake192f
-                | Algorithm::SlhDsaShake256s
-                | Algorithm::SlhDsaShake256f
-        )
-    }
-
     /// Returns true if this is an SLH-DSA algorithm
     fn is_slh_dsa(&self) -> bool {
         matches!(
