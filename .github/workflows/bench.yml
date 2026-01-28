@@ -98,11 +98,19 @@ jobs:
           cmake -GNinja -DBUILD_SHARED_LIBS=OFF -DOQS_BUILD_ONLY_LIB=OFF ..
           ninja
 
+      - name: Verify liboqs build
+        run: |
+          test -x /tmp/liboqs/build/tests/speed_kem || { echo "Error: speed_kem not found"; exit 1; }
+          echo "liboqs speed_kem found at /tmp/liboqs/build/tests/speed_kem"
+
       - name: Run external tool comparison
         env:
           LIBOQS_DIR: /tmp/liboqs/build
         run: |
-          cargo run -p kylix-cli --features bench -- bench --compare --with liboqs -a ml-kem-768 -i 100 --report markdown | tee bench-result.md
+          output=$(cargo run -p kylix-cli --features bench -- bench --compare --with liboqs -a ml-kem-768 -i 100 --report markdown 2>&1)
+          echo "$output" | tee bench-result.md
+          # Fail if liboqs was not detected (output should contain "liboqs" in the table)
+          echo "$output" | grep -q "liboqs" || { echo "Error: liboqs not detected in benchmark output"; exit 1; }
 
       - name: Post benchmark results to PR
         env:
