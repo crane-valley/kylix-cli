@@ -143,8 +143,7 @@ fn detect_liboqs() -> Option<ExternalTool> {
         #[cfg(target_os = "windows")]
         {
             if let Ok(vcpkg_root) = std::env::var("VCPKG_ROOT") {
-                let base =
-                    std::path::PathBuf::from(&vcpkg_root).join("buildtrees\\liboqs\\src");
+                let base = std::path::PathBuf::from(&vcpkg_root).join("buildtrees\\liboqs\\src");
                 if let Ok(entries) = std::fs::read_dir(&base) {
                     for entry in entries.flatten() {
                         if entry.file_type().map(|t| t.is_dir()).unwrap_or(false) {
