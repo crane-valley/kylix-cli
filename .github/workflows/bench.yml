@@ -116,6 +116,7 @@ jobs:
           grep -q "liboqs" bench-result.md || { echo "Error: liboqs not detected in benchmark output"; exit 1; }
 
       - name: Post benchmark results to PR
+        if: github.event.pull_request.head.repo.fork == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
