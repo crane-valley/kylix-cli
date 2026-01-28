@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1769571937305,
+  "lastUpdate": 1769571938043,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -6327,6 +6327,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 5161418,
             "range": "± 741779",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fb3d7e3051e146f4f1cac9559b20fcf358ff9a12",
+          "message": "docs: add security warning to README (#16)\n\n* docs: add security warning to README\n\nAdd a prominent warning that this CLI uses the experimental Kylix\nlibrary which has NOT been audited and is NOT intended for production\nuse. Link to the security policy in the main kylix repository.\n\n* docs: move security warning to top of README\n\nMove the Security section right after the intro paragraph so users\nsee the warning before proceeding with installation or usage.",
+          "timestamp": "2026-01-28T12:39:02+09:00",
+          "tree_id": "46a4b4238b20e92ee030d906d4a52b53447cb117",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/fb3d7e3051e146f4f1cac9559b20fcf358ff9a12"
+        },
+        "date": 1769571937106,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 72154,
+            "range": "± 24271",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 317359,
+            "range": "± 131251",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 60908,
+            "range": "± 9277",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 112979,
+            "range": "± 26867",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 280525,
+            "range": "± 44950",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 109518,
+            "range": "± 82866",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 157037,
+            "range": "± 20676",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 303395,
+            "range": "± 51501",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 163183,
+            "range": "± 19756",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 16135,
+            "range": "± 2812",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 13234,
+            "range": "± 2144",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 16188,
+            "range": "± 2130",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 29720,
+            "range": "± 5703",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 24993,
+            "range": "± 3575",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 32110,
+            "range": "± 5481",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 49390,
+            "range": "± 9943",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 48303,
+            "range": "± 29316",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 53349,
+            "range": "± 11435",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 2542582,
+            "range": "± 415066",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 71340771,
+            "range": "± 16096516",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 4232362,
+            "range": "± 729386",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 4089531,
+            "range": "± 657071",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 97481208,
+            "range": "± 25070821",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 6230257,
+            "range": "± 1279783",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 13078875,
+            "range": "± 2484073",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 239777604,
+            "range": "± 35459268",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 4950643,
+            "range": "± 667265",
             "unit": "ns/iter"
           }
         ]
