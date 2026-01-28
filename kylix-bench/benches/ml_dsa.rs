@@ -2,9 +2,17 @@
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use kylix_pqc::ml_dsa::{MlDsa44, MlDsa65, MlDsa87, Signer};
-use rand::rng;
+use rand::rngs::StdRng;
+use rand::{rng, SeedableRng};
 
 const MESSAGE: &[u8] = b"Benchmark message for ML-DSA signature testing";
+
+/// Create a seeded RNG for reproducible benchmarks.
+/// Using a fixed seed eliminates variance from rejection sampling
+/// by ensuring the same key is generated across benchmark runs.
+fn seeded_rng() -> StdRng {
+    StdRng::seed_from_u64(0x4b594c4958) // "KYLIX" in hex
+}
 
 fn bench_ml_dsa_44(c: &mut Criterion) {
     let mut group = c.benchmark_group("ML-DSA-44");
@@ -13,7 +21,8 @@ fn bench_ml_dsa_44(c: &mut Criterion) {
         b.iter(|| MlDsa44::keygen(&mut rng()).unwrap())
     });
 
-    let (sk, vk) = MlDsa44::keygen(&mut rng()).unwrap();
+    // Use seeded RNG for reproducible sign/verify benchmarks
+    let (sk, vk) = MlDsa44::keygen(&mut seeded_rng()).unwrap();
 
     group.bench_function("sign", |b| b.iter(|| MlDsa44::sign(&sk, MESSAGE).unwrap()));
 
@@ -33,7 +42,8 @@ fn bench_ml_dsa_65(c: &mut Criterion) {
         b.iter(|| MlDsa65::keygen(&mut rng()).unwrap())
     });
 
-    let (sk, vk) = MlDsa65::keygen(&mut rng()).unwrap();
+    // Use seeded RNG for reproducible sign/verify benchmarks
+    let (sk, vk) = MlDsa65::keygen(&mut seeded_rng()).unwrap();
 
     group.bench_function("sign", |b| b.iter(|| MlDsa65::sign(&sk, MESSAGE).unwrap()));
 
@@ -53,7 +63,8 @@ fn bench_ml_dsa_87(c: &mut Criterion) {
         b.iter(|| MlDsa87::keygen(&mut rng()).unwrap())
     });
 
-    let (sk, vk) = MlDsa87::keygen(&mut rng()).unwrap();
+    // Use seeded RNG for reproducible sign/verify benchmarks
+    let (sk, vk) = MlDsa87::keygen(&mut seeded_rng()).unwrap();
 
     group.bench_function("sign", |b| b.iter(|| MlDsa87::sign(&sk, MESSAGE).unwrap()));
 
