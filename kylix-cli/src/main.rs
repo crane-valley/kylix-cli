@@ -20,7 +20,7 @@ use std::io::{self, Read};
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::PathBuf;
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 #[cfg(feature = "bench")]
 mod bench;
@@ -570,36 +570,54 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
     let info = algo.info();
     let (pk_label, sk_label) = (info.pub_label, info.sec_label);
 
-    let (pk_bytes, mut sk_bytes): (Vec<u8>, Vec<u8>) = match algo {
+    let (pk_bytes, sk_bytes): (Vec<u8>, Zeroizing<Vec<u8>>) = match algo {
         Algorithm::MlKem512 => {
             let (dk, ek) = ml_kem::MlKem512::keygen(&mut rng())
                 .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (ek.as_bytes().to_vec(), dk.as_bytes().to_vec())
+            (
+                ek.as_bytes().to_vec(),
+                Zeroizing::new(dk.as_bytes().to_vec()),
+            )
         }
         Algorithm::MlKem768 => {
             let (dk, ek) = ml_kem::MlKem768::keygen(&mut rng())
                 .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (ek.as_bytes().to_vec(), dk.as_bytes().to_vec())
+            (
+                ek.as_bytes().to_vec(),
+                Zeroizing::new(dk.as_bytes().to_vec()),
+            )
         }
         Algorithm::MlKem1024 => {
             let (dk, ek) = ml_kem::MlKem1024::keygen(&mut rng())
                 .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (ek.as_bytes().to_vec(), dk.as_bytes().to_vec())
+            (
+                ek.as_bytes().to_vec(),
+                Zeroizing::new(dk.as_bytes().to_vec()),
+            )
         }
         Algorithm::MlDsa44 => {
             let (sk, pk) = ml_dsa::MlDsa44::keygen(&mut rng())
                 .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (pk.as_bytes().to_vec(), sk.as_bytes().to_vec())
+            (
+                pk.as_bytes().to_vec(),
+                Zeroizing::new(sk.as_bytes().to_vec()),
+            )
         }
         Algorithm::MlDsa65 => {
             let (sk, pk) = ml_dsa::MlDsa65::keygen(&mut rng())
                 .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (pk.as_bytes().to_vec(), sk.as_bytes().to_vec())
+            (
+                pk.as_bytes().to_vec(),
+                Zeroizing::new(sk.as_bytes().to_vec()),
+            )
         }
         Algorithm::MlDsa87 => {
             let (sk, pk) = ml_dsa::MlDsa87::keygen(&mut rng())
                 .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (pk.as_bytes().to_vec(), sk.as_bytes().to_vec())
+            (
+                pk.as_bytes().to_vec(),
+                Zeroizing::new(sk.as_bytes().to_vec()),
+            )
         }
         Algorithm::SlhDsaShake128s => {
             let (sk, pk) = slh_dsa::SlhDsaShake128s::keygen(&mut rng())
@@ -639,9 +657,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
 
     let pk_encoded = encode_output(&pk_bytes, format, pk_label);
     let sk_encoded = encode_output(&sk_bytes, format, sk_label);
-
-    // Zeroize secret key bytes after encoding
-    sk_bytes.zeroize();
+    // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
 
     let pub_path = format!("{}.pub", output);
     let sec_path = format!("{}.sec", output);
