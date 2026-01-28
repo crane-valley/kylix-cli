@@ -57,7 +57,7 @@ jobs:
           name: 'Benchmark (${{ matrix.platform }})'
           comment-on-alert: true
           comment-always: false
-          alert-threshold: '250%'
+          alert-threshold: '150%'
           fail-on-alert: false
           summary-always: true
           auto-push: false
