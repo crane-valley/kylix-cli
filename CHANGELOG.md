@@ -15,7 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- **Secret key memory protection**: Improved handling of secret keys in memory. Newly generated keys are wrapped in `Zeroizing<Vec<u8>>`, and keys read from files are explicitly zeroized after use
+- **Secret key memory protection**: Improved handling of secret keys in memory:
+  - Newly generated keys are wrapped in `Zeroizing<Vec<u8>>` for automatic cleanup on drop
+  - Keys read from files are explicitly zeroized after use
 - **Inherited from kylix-pqc v0.4.3**:
   - SLH-DSA `SigningKey::to_bytes()` returns `Zeroizing<Vec<u8>>`
   - SLH-DSA PRF outputs automatically zeroized
