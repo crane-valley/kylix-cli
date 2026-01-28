@@ -21,7 +21,7 @@ Before committing or creating a PR, always run:
 
 ## Release
 
-- Ensure `Cargo.toml` version matches the tag before release
+- Ensure the `version` in `Cargo.toml` is set to `X.Y.Z` before creating the `vX.Y.Z` tag
 - Create a **tag only** with `git tag vX.Y.Z && git push origin vX.Y.Z`
   - Do NOT use `gh release create` - cargo-dist creates the release automatically
 - cargo-dist will build binaries and create the GitHub Release with installers
