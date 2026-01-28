@@ -8,7 +8,15 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 
 | Task | Priority | Notes |
 |------|----------|-------|
-| Tool Detection Refactor | HIGH | PR #25 - Environment variable support for OpenSSL/liboqs |
+| Bench Compare CI | MEDIUM | PR #27 - liboqs CI test with PR comment output |
+
+---
+
+## Completed
+
+| Task | Priority | Notes |
+|------|----------|-------|
+| Tool Detection Refactor | HIGH | PR #25 merged - Environment variable support for OpenSSL/liboqs |
 
 ---
 
@@ -16,7 +24,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 
 | Task | Priority | Notes |
 |------|----------|-------|
-| Bench Compare CI | MEDIUM | Test OpenSSL/liboqs detection on Linux/macOS |
+| OpenSSL CI Compare | LOW | Add OpenSSL 3.5+ to bench compare CI (requires source build) |
 | Long Functions | MEDIUM | Requires kylix-pqc trait unification (see below) |
 | OpenSSL Dedup | LOW | Extract common logic from KEM/SIG benchmark functions |
 | liboqs Parsing | LOW | Parse column headers instead of hardcoded indices |
