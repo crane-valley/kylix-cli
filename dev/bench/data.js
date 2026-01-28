@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1769559629979,
+  "lastUpdate": 1769559637238,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -4467,6 +4467,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 6023155,
             "range": "± 832781",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fe905c163449de6ca3f5cb6b345dea736a3cebdd",
+          "message": "fix: use URL-encoded format for shields.io website badge (#13)\n\n* docs: add website badge\n\n* docs: use dynamic website badge showing online status\n\nApply reviewer suggestion to use shields.io dynamic badge\nthat displays the website's active status instead of a static badge.\n\n* fix: use URL-encoded format for shields.io website badge\n\nUse official shields.io generator format with query parameter\nand URL encoding instead of path-based format.",
+          "timestamp": "2026-01-28T09:14:30+09:00",
+          "tree_id": "41f26597b74c752dc816c31159529816a7a95d9c",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/fe905c163449de6ca3f5cb6b345dea736a3cebdd"
+        },
+        "date": 1769559636163,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 53835,
+            "range": "± 3022",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 292214,
+            "range": "± 8202",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 56827,
+            "range": "± 1112",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 104467,
+            "range": "± 3619",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 342918,
+            "range": "± 6910",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 94418,
+            "range": "± 3594",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 151421,
+            "range": "± 2573",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 711351,
+            "range": "± 22487",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 178118,
+            "range": "± 22724",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 15016,
+            "range": "± 1763",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 13109,
+            "range": "± 859",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 15592,
+            "range": "± 1668",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 24961,
+            "range": "± 1202",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 23069,
+            "range": "± 2639",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 25630,
+            "range": "± 2523",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 39873,
+            "range": "± 2985",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 35037,
+            "range": "± 1980",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 39399,
+            "range": "± 5695",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 2570967,
+            "range": "± 115211",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 68572458,
+            "range": "± 7600024",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 3407950,
+            "range": "± 397025",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 3768674,
+            "range": "± 487524",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 87868188,
+            "range": "± 8604103",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 4683113,
+            "range": "± 147987",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 8829961,
+            "range": "± 309124",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 180291645,
+            "range": "± 9743403",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 4915456,
+            "range": "± 441333",
             "unit": "ns/iter"
           }
         ]
