@@ -8,7 +8,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 
 | Task | Priority | Notes |
 |------|----------|-------|
-| Bench Compare CI | MEDIUM | PR #27 - liboqs CI test with PR comment output |
+| (none) | | |
 
 ---
 
@@ -16,6 +16,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 
 | Task | Priority | Notes |
 |------|----------|-------|
+| Bench Compare CI | MEDIUM | PR #27 merged - liboqs CI test with PR comment output |
 | Tool Detection Refactor | HIGH | PR #25 merged - Environment variable support for OpenSSL/liboqs |
 
 ---
