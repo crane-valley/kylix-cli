@@ -2,12 +2,11 @@
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use kylix_pqc::ml_kem::{Kem, MlKem1024, MlKem512, MlKem768};
-use rand::rngs::StdRng;
-use rand::{rng, SeedableRng};
+use rand::{rng, rngs::StdRng, SeedableRng};
 
 /// Create a seeded RNG for reproducible benchmarks.
 fn seeded_rng() -> StdRng {
-    StdRng::seed_from_u64(0x4b594c4958) // "KYLIX" in hex
+    StdRng::seed_from_u64(0x4b594c4958)
 }
 
 fn bench_ml_kem_512(c: &mut Criterion) {

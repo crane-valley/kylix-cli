@@ -4,14 +4,13 @@
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use kylix_pqc::slh_dsa::{Signer, SlhDsaShake128f, SlhDsaShake192f, SlhDsaShake256f};
-use rand::rngs::StdRng;
-use rand::{rng, SeedableRng};
+use rand::{rng, rngs::StdRng, SeedableRng};
 
 const MESSAGE: &[u8] = b"Benchmark message for SLH-DSA signature testing";
 
 /// Create a seeded RNG for reproducible benchmarks.
 fn seeded_rng() -> StdRng {
-    StdRng::seed_from_u64(0x4b594c4958) // "KYLIX" in hex
+    StdRng::seed_from_u64(0x4b594c4958)
 }
 
 fn bench_slh_dsa_shake_128f(c: &mut Criterion) {

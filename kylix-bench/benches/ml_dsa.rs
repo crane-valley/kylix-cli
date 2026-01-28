@@ -2,8 +2,7 @@
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use kylix_pqc::ml_dsa::{MlDsa44, MlDsa65, MlDsa87, Signer};
-use rand::rngs::StdRng;
-use rand::{rng, SeedableRng};
+use rand::{rng, rngs::StdRng, SeedableRng};
 
 const MESSAGE: &[u8] = b"Benchmark message for ML-DSA signature testing";
 
@@ -11,7 +10,7 @@ const MESSAGE: &[u8] = b"Benchmark message for ML-DSA signature testing";
 /// Using a fixed seed eliminates variance from rejection sampling
 /// by ensuring the same key is generated across benchmark runs.
 fn seeded_rng() -> StdRng {
-    StdRng::seed_from_u64(0x4b594c4958) // "KYLIX" in hex
+    StdRng::seed_from_u64(0x4b594c4958)
 }
 
 fn bench_ml_dsa_44(c: &mut Criterion) {
