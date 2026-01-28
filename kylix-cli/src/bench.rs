@@ -123,10 +123,7 @@ fn detect_liboqs() -> Option<ExternalTool> {
             let exe_name = format!("speed_kem{}", std::env::consts::EXE_SUFFIX);
             // Check common build output locations
             for subdir in ["bin", "build/tests", "tests"] {
-                let candidate = base.join(subdir).join(&exe_name);
-                if candidate.exists() {
-                    paths.push(candidate);
-                }
+                paths.push(base.join(subdir).join(&exe_name));
             }
         }
 
@@ -200,14 +197,11 @@ fn detect_openssl() -> Option<ExternalTool> {
 
         // Check OPENSSL_DIR or OPENSSL_ROOT_DIR environment variables first
         let exe_name = format!("openssl{}", std::env::consts::EXE_SUFFIX);
-        for env_var in ["OPENSSL_DIR", "OPENSSL_ROOT_DIR"] {
-            if let Ok(openssl_dir) = std::env::var(env_var) {
-                let base = std::path::PathBuf::from(&openssl_dir);
-                let candidate = base.join("bin").join(&exe_name);
-                if candidate.exists() {
-                    paths.push(candidate);
-                }
-            }
+        if let Ok(openssl_dir) =
+            std::env::var("OPENSSL_DIR").or_else(|_| std::env::var("OPENSSL_ROOT_DIR"))
+        {
+            let base = std::path::PathBuf::from(openssl_dir);
+            paths.push(base.join("bin").join(&exe_name));
         }
 
         // Check PATH
