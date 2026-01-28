@@ -73,6 +73,8 @@ jobs:
             platform: x86_64-linux
           - os: macos-latest
             platform: arm64-macos
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -100,4 +102,15 @@ jobs:
         env:
           LIBOQS_DIR: /tmp/liboqs/build
         run: |
-          cargo run -p kylix-cli --features bench -- bench --compare --with liboqs -a ml-kem-768 -i 100 -v
+          cargo run -p kylix-cli --features bench -- bench --compare --with liboqs -a ml-kem-768 -i 100 --report markdown | tee bench-result.md
+
+      - name: Post benchmark results to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "## External Tool Benchmark (${{ matrix.platform }})"
+            echo ""
+            cat bench-result.md
+          } > comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
