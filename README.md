@@ -100,14 +100,19 @@ kylix bench -a ml-kem-768 --compare
 
 ```sh
 # Bash
+mkdir -p ~/.local/share/bash-completion/completions
 kylix completions bash > ~/.local/share/bash-completion/completions/kylix
 
 # Zsh (add ~/.zfunc to fpath in .zshrc)
+mkdir -p ~/.zfunc
 kylix completions zsh > ~/.zfunc/_kylix
 
 # Fish
+mkdir -p ~/.config/fish/completions
 kylix completions fish > ~/.config/fish/completions/kylix.fish
+```
 
+```powershell
 # PowerShell (add to $PROFILE)
 kylix completions powershell >> $PROFILE
 ```
