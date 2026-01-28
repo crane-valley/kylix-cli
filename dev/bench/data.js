@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1769609739576,
+  "lastUpdate": 1769609768157,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -12279,6 +12279,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 7280895,
             "range": "± 1566156",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1a1abd813f30d17c593dee09cbc0d8865a41bca",
+          "message": "ci: add external tool comparison workflow (#27)\n\n* ci: add external tool comparison workflow\n\nAdd CI job to test liboqs detection and benchmark comparison on\nLinux and macOS. This validates the tool detection refactoring\nfrom PR #25 works correctly in CI environments.\n\nThe workflow:\n- Builds liboqs from source on ubuntu-latest and macos-latest\n- Sets LIBOQS_DIR environment variable\n- Runs `kylix bench --compare --with liboqs` to verify detection\n\n* ci: post external tool benchmark results to PR comment\n\n- Add pull-requests: write permission to external-tool-compare job\n- Output benchmark results in markdown format\n- Post results as PR comment using gh CLI\n\n* fix: show OpenSSL note only when OpenSSL is detected\n\nThe benchmark comparison output previously always displayed a note\nabout OpenSSL process overhead, even when OpenSSL was not detected.\nNow the note is only shown when OpenSSL benchmarks are included in\nthe comparison results.\n\n* docs: update PLANS.md with current progress\n\n* ci: add explicit liboqs detection verification\n\n- Add step to verify speed_kem binary exists after build\n- Check benchmark output contains \"liboqs\" to confirm detection\n- Fail CI if liboqs is not detected (addresses review feedback)\n\n* fix: remove ANSI color codes from PR comment output\n\n* ci: skip PR comment for forked PRs",
+          "timestamp": "2026-01-28T23:09:37+09:00",
+          "tree_id": "5ce130b2885a346b36b9b822537861b54741763a",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/c1a1abd813f30d17c593dee09cbc0d8865a41bca"
+        },
+        "date": 1769609766373,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 68342,
+            "range": "± 11492",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 349225,
+            "range": "± 58703",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 66355,
+            "range": "± 14829",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 123787,
+            "range": "± 21498",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 302580,
+            "range": "± 49875",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 112501,
+            "range": "± 19244",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 194729,
+            "range": "± 27008",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 385513,
+            "range": "± 70343",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 179810,
+            "range": "± 28909",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 17617,
+            "range": "± 2684",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 14470,
+            "range": "± 2156",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 17591,
+            "range": "± 2328",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 30547,
+            "range": "± 5589",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 26224,
+            "range": "± 4638",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 27821,
+            "range": "± 4102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 51449,
+            "range": "± 11461",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 43455,
+            "range": "± 12763",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 43970,
+            "range": "± 9384",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 2866616,
+            "range": "± 366508",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 63754917,
+            "range": "± 10764538",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 3486722,
+            "range": "± 437949",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 4270127,
+            "range": "± 579669",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 105172750,
+            "range": "± 26504594",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 5779740,
+            "range": "± 890664",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 10207070,
+            "range": "± 1562894",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 217117396,
+            "range": "± 21595739",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 5689014,
+            "range": "± 761430",
             "unit": "ns/iter"
           }
         ]
