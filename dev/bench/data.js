@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770037468107,
+  "lastUpdate": 1770042953206,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -9487,6 +9487,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 4996717,
             "range": "± 22873",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "14c6725e5bb8fdfef7a1e7aa9cb11d4e10c2fb91",
+          "message": "refactor: deduplicate match arms with dispatch macros (#31)\n\n* refactor: deduplicate match arms with dispatch macros\n\nAdd 6 macros (kem_keygen!, dsa_keygen!, kem_encaps!, kem_decaps!,\ndsa_sign!, dsa_verify!) that extract the per-algorithm boilerplate\nfrom cmd_keygen, cmd_encaps, cmd_decaps, cmd_sign, and cmd_verify.\n\nReduces 36 near-identical multi-line match arms to one-liner macro\ninvocations (-234/+166 lines net reduction in main.rs).\n\n* docs: update PLANS.md - match arm dedup completed (PR #31)",
+          "timestamp": "2026-02-02T23:29:51+09:00",
+          "tree_id": "a815c955d935d1323b7ce9a7c097b38aef04047d",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/14c6725e5bb8fdfef7a1e7aa9cb11d4e10c2fb91"
+        },
+        "date": 1770042952549,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 64031,
+            "range": "± 79",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 372031,
+            "range": "± 233",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 68687,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 115169,
+            "range": "± 91",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 326423,
+            "range": "± 233",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 109771,
+            "range": "± 129",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 177861,
+            "range": "± 254",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 355464,
+            "range": "± 265",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 181251,
+            "range": "± 291",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 18104,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 16980,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 20345,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 30968,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 28216,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 32620,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 48818,
+            "range": "± 71",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 44193,
+            "range": "± 66",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 50266,
+            "range": "± 27",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 2454772,
+            "range": "± 11812",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 57418027,
+            "range": "± 71241",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 3397910,
+            "range": "± 10390",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 3591981,
+            "range": "± 23327",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 92402117,
+            "range": "± 61078",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 4956869,
+            "range": "± 5740",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 9543713,
+            "range": "± 49941",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 190935686,
+            "range": "± 251061",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 5030574,
+            "range": "± 19971",
             "unit": "ns/iter"
           }
         ]
