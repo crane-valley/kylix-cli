@@ -14,9 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **kylix-pqc v0.4.4**: Updated to latest library version with consistent API across all algorithms
   - SLH-DSA `from_bytes()` now returns `Result<T, E>` (was `Option<T>`)
   - SLH-DSA byte access unified to `as_bytes()` (was `to_bytes()`)
-
-### Refactored
-
 - **Dispatch macros**: Introduced 6 macros to deduplicate 36 near-identical match arms across 5 command functions (`cmd_keygen`, `cmd_encaps`, `cmd_decaps`, `cmd_sign`, `cmd_verify`)
 
 ## [0.5.1] - 2026-01-28
