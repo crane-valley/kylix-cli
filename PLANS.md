@@ -25,7 +25,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | Task | Priority | Notes |
 |------|----------|-------|
 | OpenSSL CI Compare | LOW | Add OpenSSL 3.5+ to bench compare CI (requires source build) |
-| Long Functions | MEDIUM | Requires kylix-pqc trait unification (see below) |
+| Match Arm Dedup | MEDIUM | Macro refactor for keygen/sign/verify across all algorithms (unblocked by kylix-pqc 0.4.4) |
 | OpenSSL Dedup | LOW | Extract common logic from KEM/SIG benchmark functions |
 | liboqs Parsing | LOW | Parse column headers instead of hardcoded indices |
 | wolfSSL Support | LOW | Add wolfSSL as external benchmark tool |
@@ -34,17 +34,13 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 
 ## Refactoring Notes
 
-### Long Functions (Blocked)
+### Match Arm Dedup (Unblocked)
 
-`cmd_keygen` (98L), `cmd_sign` (131L), `cmd_verify` (122L) each contain 12-branch match statements due to:
+`cmd_keygen` (12 arms), `cmd_sign` (9 arms), `cmd_verify` (9 arms) all have near-identical match arms differing only in the algorithm type. As of kylix-pqc 0.4.4, the SLH-DSA API is now consistent with ML-KEM/ML-DSA:
 
-| Issue | ML-KEM/ML-DSA | SLH-DSA |
-|-------|---------------|---------|
-| `from_bytes()` return | `Result<T, E>` | `Option<T>` |
-| Bytes access | `as_bytes()` | `to_bytes()` / `as_ref()` |
+| Issue | All algorithms (0.4.4) |
+|-------|------------------------|
+| `from_bytes()` return | `Result<T, E>` |
+| Bytes access | `as_bytes()` |
 
-**Resolution**: Add unified trait to kylix-pqc library, then refactor CLI.
-
-### Error Patterns (Won't Fix)
-
-`map_err` vs `ok_or_else` difference is due to kylix-pqc API design, not CLI code style.
+A macro (or unified trait in kylix-pqc) can now deduplicate all arms.
