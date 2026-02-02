@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-02-02
+
+### Changed
+
+- **kylix-pqc v0.4.4**: Updated to latest library version with consistent API across all algorithms
+  - SLH-DSA `from_bytes()` now returns `Result<T, E>` (was `Option<T>`)
+  - SLH-DSA byte access unified to `as_bytes()` (was `to_bytes()`)
+
+### Refactored
+
+- **Dispatch macros**: Introduced 6 macros to deduplicate 36 near-identical match arms across 5 command functions (`cmd_keygen`, `cmd_encaps`, `cmd_decaps`, `cmd_sign`, `cmd_verify`)
+
 ## [0.5.1] - 2026-01-28
 
 ### Changed
@@ -56,6 +68,7 @@ All algorithms from kylix-pqc 0.4.x:
 - **ML-DSA** (FIPS 204): ML-DSA-44, ML-DSA-65, ML-DSA-87
 - **SLH-DSA** (FIPS 205): All SHAKE variants (128s/f, 192s/f, 256s/f)
 
-[Unreleased]: https://github.com/crane-valley/kylix-cli/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/crane-valley/kylix-cli/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/crane-valley/kylix-cli/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/crane-valley/kylix-cli/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/crane-valley/kylix-cli/releases/tag/v0.5.0
