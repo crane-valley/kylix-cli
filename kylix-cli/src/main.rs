@@ -22,6 +22,70 @@ use std::os::unix::fs::OpenOptionsExt;
 use std::path::PathBuf;
 use zeroize::{Zeroize, Zeroizing};
 
+// Algorithm dispatch macros — eliminate per-variant boilerplate in cmd_* functions.
+
+macro_rules! kem_keygen {
+    ($algo:ty) => {{
+        let (dk, ek) =
+            <$algo>::keygen(&mut rng()).map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
+        (
+            ek.as_bytes().to_vec(),
+            Zeroizing::new(dk.as_bytes().to_vec()),
+        )
+    }};
+}
+
+macro_rules! dsa_keygen {
+    ($algo:ty) => {{
+        let (sk, pk) =
+            <$algo>::keygen(&mut rng()).map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
+        (
+            pk.as_bytes().to_vec(),
+            Zeroizing::new(sk.as_bytes().to_vec()),
+        )
+    }};
+}
+
+macro_rules! kem_encaps {
+    ($crate_:ident :: $submod:ident, $algo:ty, $pk_bytes:expr) => {{
+        let ek = $crate_::$submod::EncapsulationKey::from_bytes(&$pk_bytes)
+            .map_err(|e| anyhow!("Invalid public key: {:?}", e))?;
+        let (ct, ss) = <$algo>::encaps(&ek, &mut rng())
+            .map_err(|e| anyhow!("Encapsulation failed: {:?}", e))?;
+        (ct.as_bytes().to_vec(), ss.as_ref().to_vec())
+    }};
+}
+
+macro_rules! kem_decaps {
+    ($crate_:ident :: $submod:ident, $algo:ty, $sk_bytes:expr, $ct_bytes:expr) => {{
+        let dk = $crate_::$submod::DecapsulationKey::from_bytes(&$sk_bytes)
+            .map_err(|e| anyhow!("Invalid secret key: {:?}", e))?;
+        let ct = $crate_::$submod::Ciphertext::from_bytes(&$ct_bytes)
+            .map_err(|e| anyhow!("Invalid ciphertext: {:?}", e))?;
+        let ss = <$algo>::decaps(&dk, &ct).map_err(|e| anyhow!("Decapsulation failed: {:?}", e))?;
+        ss.as_ref().to_vec()
+    }};
+}
+
+macro_rules! dsa_sign {
+    ($crate_:ident :: $submod:ident, $algo:ty, $sk_bytes:expr, $message:expr) => {{
+        let sk = $crate_::$submod::SigningKey::from_bytes(&$sk_bytes)
+            .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
+        let sig = <$algo>::sign(&sk, &$message).map_err(|e| anyhow!("Signing failed: {:?}", e))?;
+        sig.as_bytes().to_vec()
+    }};
+}
+
+macro_rules! dsa_verify {
+    ($crate_:ident :: $submod:ident, $algo:ty, $pk_bytes:expr, $sig_bytes:expr, $message:expr) => {{
+        let pk = $crate_::$submod::VerificationKey::from_bytes(&$pk_bytes)
+            .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
+        let sig = $crate_::$submod::Signature::from_bytes(&$sig_bytes)
+            .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
+        <$algo>::verify(&pk, &$message, &sig)
+    }};
+}
+
 #[cfg(feature = "bench")]
 mod bench;
 
@@ -571,102 +635,18 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
     let (pk_label, sk_label) = (info.pub_label, info.sec_label);
 
     let (pk_bytes, sk_bytes): (Vec<u8>, Zeroizing<Vec<u8>>) = match algo {
-        Algorithm::MlKem512 => {
-            let (dk, ek) = ml_kem::MlKem512::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                ek.as_bytes().to_vec(),
-                Zeroizing::new(dk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::MlKem768 => {
-            let (dk, ek) = ml_kem::MlKem768::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                ek.as_bytes().to_vec(),
-                Zeroizing::new(dk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::MlKem1024 => {
-            let (dk, ek) = ml_kem::MlKem1024::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                ek.as_bytes().to_vec(),
-                Zeroizing::new(dk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::MlDsa44 => {
-            let (sk, pk) = ml_dsa::MlDsa44::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::MlDsa65 => {
-            let (sk, pk) = ml_dsa::MlDsa65::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::MlDsa87 => {
-            let (sk, pk) = ml_dsa::MlDsa87::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::SlhDsaShake128s => {
-            let (sk, pk) = slh_dsa::SlhDsaShake128s::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::SlhDsaShake128f => {
-            let (sk, pk) = slh_dsa::SlhDsaShake128f::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::SlhDsaShake192s => {
-            let (sk, pk) = slh_dsa::SlhDsaShake192s::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::SlhDsaShake192f => {
-            let (sk, pk) = slh_dsa::SlhDsaShake192f::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::SlhDsaShake256s => {
-            let (sk, pk) = slh_dsa::SlhDsaShake256s::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
-        Algorithm::SlhDsaShake256f => {
-            let (sk, pk) = slh_dsa::SlhDsaShake256f::keygen(&mut rng())
-                .map_err(|e| anyhow!("Key generation failed: {:?}", e))?;
-            (
-                pk.as_bytes().to_vec(),
-                Zeroizing::new(sk.as_bytes().to_vec()),
-            )
-        }
+        Algorithm::MlKem512 => kem_keygen!(ml_kem::MlKem512),
+        Algorithm::MlKem768 => kem_keygen!(ml_kem::MlKem768),
+        Algorithm::MlKem1024 => kem_keygen!(ml_kem::MlKem1024),
+        Algorithm::MlDsa44 => dsa_keygen!(ml_dsa::MlDsa44),
+        Algorithm::MlDsa65 => dsa_keygen!(ml_dsa::MlDsa65),
+        Algorithm::MlDsa87 => dsa_keygen!(ml_dsa::MlDsa87),
+        Algorithm::SlhDsaShake128s => dsa_keygen!(slh_dsa::SlhDsaShake128s),
+        Algorithm::SlhDsaShake128f => dsa_keygen!(slh_dsa::SlhDsaShake128f),
+        Algorithm::SlhDsaShake192s => dsa_keygen!(slh_dsa::SlhDsaShake192s),
+        Algorithm::SlhDsaShake192f => dsa_keygen!(slh_dsa::SlhDsaShake192f),
+        Algorithm::SlhDsaShake256s => dsa_keygen!(slh_dsa::SlhDsaShake256s),
+        Algorithm::SlhDsaShake256f => dsa_keygen!(slh_dsa::SlhDsaShake256f),
     };
 
     // Store sizes before zeroization for verbose output
@@ -713,27 +693,9 @@ fn cmd_encaps(
     }
 
     let (ct_bytes, mut ss_bytes): (Vec<u8>, Vec<u8>) = match algo {
-        Algorithm::MlKem512 => {
-            let ek = ml_kem::ml_kem_512::EncapsulationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid public key: {:?}", e))?;
-            let (ct, ss) = ml_kem::MlKem512::encaps(&ek, &mut rng())
-                .map_err(|e| anyhow!("Encapsulation failed: {:?}", e))?;
-            (ct.as_bytes().to_vec(), ss.as_ref().to_vec())
-        }
-        Algorithm::MlKem768 => {
-            let ek = ml_kem::ml_kem_768::EncapsulationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid public key: {:?}", e))?;
-            let (ct, ss) = ml_kem::MlKem768::encaps(&ek, &mut rng())
-                .map_err(|e| anyhow!("Encapsulation failed: {:?}", e))?;
-            (ct.as_bytes().to_vec(), ss.as_ref().to_vec())
-        }
-        Algorithm::MlKem1024 => {
-            let ek = ml_kem::ml_kem_1024::EncapsulationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid public key: {:?}", e))?;
-            let (ct, ss) = ml_kem::MlKem1024::encaps(&ek, &mut rng())
-                .map_err(|e| anyhow!("Encapsulation failed: {:?}", e))?;
-            (ct.as_bytes().to_vec(), ss.as_ref().to_vec())
-        }
+        Algorithm::MlKem512 => kem_encaps!(ml_kem::ml_kem_512, ml_kem::MlKem512, pk_bytes),
+        Algorithm::MlKem768 => kem_encaps!(ml_kem::ml_kem_768, ml_kem::MlKem768, pk_bytes),
+        Algorithm::MlKem1024 => kem_encaps!(ml_kem::ml_kem_1024, ml_kem::MlKem1024, pk_bytes),
         // detect_kem_algorithm only returns ML-KEM variants, so DSA variants are unreachable
         _ => unreachable!(),
     };
@@ -805,31 +767,13 @@ fn cmd_decaps(
 
     let mut ss_bytes: Vec<u8> = match algo {
         Algorithm::MlKem512 => {
-            let dk = ml_kem::ml_kem_512::DecapsulationKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid secret key: {:?}", e))?;
-            let ct = ml_kem::ml_kem_512::Ciphertext::from_bytes(&ct_bytes)
-                .map_err(|e| anyhow!("Invalid ciphertext: {:?}", e))?;
-            let ss = ml_kem::MlKem512::decaps(&dk, &ct)
-                .map_err(|e| anyhow!("Decapsulation failed: {:?}", e))?;
-            ss.as_ref().to_vec()
+            kem_decaps!(ml_kem::ml_kem_512, ml_kem::MlKem512, sk_bytes, ct_bytes)
         }
         Algorithm::MlKem768 => {
-            let dk = ml_kem::ml_kem_768::DecapsulationKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid secret key: {:?}", e))?;
-            let ct = ml_kem::ml_kem_768::Ciphertext::from_bytes(&ct_bytes)
-                .map_err(|e| anyhow!("Invalid ciphertext: {:?}", e))?;
-            let ss = ml_kem::MlKem768::decaps(&dk, &ct)
-                .map_err(|e| anyhow!("Decapsulation failed: {:?}", e))?;
-            ss.as_ref().to_vec()
+            kem_decaps!(ml_kem::ml_kem_768, ml_kem::MlKem768, sk_bytes, ct_bytes)
         }
         Algorithm::MlKem1024 => {
-            let dk = ml_kem::ml_kem_1024::DecapsulationKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid secret key: {:?}", e))?;
-            let ct = ml_kem::ml_kem_1024::Ciphertext::from_bytes(&ct_bytes)
-                .map_err(|e| anyhow!("Invalid ciphertext: {:?}", e))?;
-            let ss = ml_kem::MlKem1024::decaps(&dk, &ct)
-                .map_err(|e| anyhow!("Decapsulation failed: {:?}", e))?;
-            ss.as_ref().to_vec()
+            kem_decaps!(ml_kem::ml_kem_1024, ml_kem::MlKem1024, sk_bytes, ct_bytes)
         }
         // detect_kem_algorithm only returns ML-KEM variants, so this is unreachable
         _ => unreachable!(),
@@ -898,68 +842,56 @@ fn cmd_sign(
     }
 
     let sig_bytes: Vec<u8> = match algo {
-        Algorithm::MlDsa44 => {
-            let sk = ml_dsa::dsa44::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = ml_dsa::MlDsa44::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
-        }
-        Algorithm::MlDsa65 => {
-            let sk = ml_dsa::dsa65::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = ml_dsa::MlDsa65::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
-        }
-        Algorithm::MlDsa87 => {
-            let sk = ml_dsa::dsa87::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = ml_dsa::MlDsa87::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
-        }
+        Algorithm::MlDsa44 => dsa_sign!(ml_dsa::dsa44, ml_dsa::MlDsa44, sk_bytes, message),
+        Algorithm::MlDsa65 => dsa_sign!(ml_dsa::dsa65, ml_dsa::MlDsa65, sk_bytes, message),
+        Algorithm::MlDsa87 => dsa_sign!(ml_dsa::dsa87, ml_dsa::MlDsa87, sk_bytes, message),
         Algorithm::SlhDsaShake128s => {
-            let sk = slh_dsa::slh_dsa_shake_128s::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = slh_dsa::SlhDsaShake128s::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
+            dsa_sign!(
+                slh_dsa::slh_dsa_shake_128s,
+                slh_dsa::SlhDsaShake128s,
+                sk_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake128f => {
-            let sk = slh_dsa::slh_dsa_shake_128f::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = slh_dsa::SlhDsaShake128f::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
+            dsa_sign!(
+                slh_dsa::slh_dsa_shake_128f,
+                slh_dsa::SlhDsaShake128f,
+                sk_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake192s => {
-            let sk = slh_dsa::slh_dsa_shake_192s::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = slh_dsa::SlhDsaShake192s::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
+            dsa_sign!(
+                slh_dsa::slh_dsa_shake_192s,
+                slh_dsa::SlhDsaShake192s,
+                sk_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake192f => {
-            let sk = slh_dsa::slh_dsa_shake_192f::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = slh_dsa::SlhDsaShake192f::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
+            dsa_sign!(
+                slh_dsa::slh_dsa_shake_192f,
+                slh_dsa::SlhDsaShake192f,
+                sk_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake256s => {
-            let sk = slh_dsa::slh_dsa_shake_256s::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = slh_dsa::SlhDsaShake256s::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
+            dsa_sign!(
+                slh_dsa::slh_dsa_shake_256s,
+                slh_dsa::SlhDsaShake256s,
+                sk_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake256f => {
-            let sk = slh_dsa::slh_dsa_shake_256f::SigningKey::from_bytes(&sk_bytes)
-                .map_err(|e| anyhow!("Invalid signing key: {:?}", e))?;
-            let sig = slh_dsa::SlhDsaShake256f::sign(&sk, &message)
-                .map_err(|e| anyhow!("Signing failed: {:?}", e))?;
-            sig.as_bytes().to_vec()
+            dsa_sign!(
+                slh_dsa::slh_dsa_shake_256f,
+                slh_dsa::SlhDsaShake256f,
+                sk_bytes,
+                message
+            )
         }
         _ => bail!("Algorithm {} does not support signing", algo),
     };
@@ -1032,67 +964,67 @@ fn cmd_verify(
 
     let result = match algo {
         Algorithm::MlDsa44 => {
-            let pk = ml_dsa::dsa44::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = ml_dsa::dsa44::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            ml_dsa::MlDsa44::verify(&pk, &message, &sig)
+            dsa_verify!(ml_dsa::dsa44, ml_dsa::MlDsa44, pk_bytes, sig_bytes, message)
         }
         Algorithm::MlDsa65 => {
-            let pk = ml_dsa::dsa65::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = ml_dsa::dsa65::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            ml_dsa::MlDsa65::verify(&pk, &message, &sig)
+            dsa_verify!(ml_dsa::dsa65, ml_dsa::MlDsa65, pk_bytes, sig_bytes, message)
         }
         Algorithm::MlDsa87 => {
-            let pk = ml_dsa::dsa87::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = ml_dsa::dsa87::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            ml_dsa::MlDsa87::verify(&pk, &message, &sig)
+            dsa_verify!(ml_dsa::dsa87, ml_dsa::MlDsa87, pk_bytes, sig_bytes, message)
         }
         Algorithm::SlhDsaShake128s => {
-            let pk = slh_dsa::slh_dsa_shake_128s::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = slh_dsa::slh_dsa_shake_128s::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            slh_dsa::SlhDsaShake128s::verify(&pk, &message, &sig)
+            dsa_verify!(
+                slh_dsa::slh_dsa_shake_128s,
+                slh_dsa::SlhDsaShake128s,
+                pk_bytes,
+                sig_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake128f => {
-            let pk = slh_dsa::slh_dsa_shake_128f::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = slh_dsa::slh_dsa_shake_128f::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            slh_dsa::SlhDsaShake128f::verify(&pk, &message, &sig)
+            dsa_verify!(
+                slh_dsa::slh_dsa_shake_128f,
+                slh_dsa::SlhDsaShake128f,
+                pk_bytes,
+                sig_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake192s => {
-            let pk = slh_dsa::slh_dsa_shake_192s::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = slh_dsa::slh_dsa_shake_192s::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            slh_dsa::SlhDsaShake192s::verify(&pk, &message, &sig)
+            dsa_verify!(
+                slh_dsa::slh_dsa_shake_192s,
+                slh_dsa::SlhDsaShake192s,
+                pk_bytes,
+                sig_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake192f => {
-            let pk = slh_dsa::slh_dsa_shake_192f::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = slh_dsa::slh_dsa_shake_192f::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            slh_dsa::SlhDsaShake192f::verify(&pk, &message, &sig)
+            dsa_verify!(
+                slh_dsa::slh_dsa_shake_192f,
+                slh_dsa::SlhDsaShake192f,
+                pk_bytes,
+                sig_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake256s => {
-            let pk = slh_dsa::slh_dsa_shake_256s::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = slh_dsa::slh_dsa_shake_256s::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            slh_dsa::SlhDsaShake256s::verify(&pk, &message, &sig)
+            dsa_verify!(
+                slh_dsa::slh_dsa_shake_256s,
+                slh_dsa::SlhDsaShake256s,
+                pk_bytes,
+                sig_bytes,
+                message
+            )
         }
         Algorithm::SlhDsaShake256f => {
-            let pk = slh_dsa::slh_dsa_shake_256f::VerificationKey::from_bytes(&pk_bytes)
-                .map_err(|e| anyhow!("Invalid verification key: {:?}", e))?;
-            let sig = slh_dsa::slh_dsa_shake_256f::Signature::from_bytes(&sig_bytes)
-                .map_err(|e| anyhow!("Invalid signature: {:?}", e))?;
-            slh_dsa::SlhDsaShake256f::verify(&pk, &message, &sig)
+            dsa_verify!(
+                slh_dsa::slh_dsa_shake_256f,
+                slh_dsa::SlhDsaShake256f,
+                pk_bytes,
+                sig_bytes,
+                message
+            )
         }
         _ => bail!("Algorithm {} does not support verification", algo),
     };
