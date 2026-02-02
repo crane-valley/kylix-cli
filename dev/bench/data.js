@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770042969024,
+  "lastUpdate": 1770042978026,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -4835,6 +4835,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 7264625,
             "range": "± 12262",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "14c6725e5bb8fdfef7a1e7aa9cb11d4e10c2fb91",
+          "message": "refactor: deduplicate match arms with dispatch macros (#31)\n\n* refactor: deduplicate match arms with dispatch macros\n\nAdd 6 macros (kem_keygen!, dsa_keygen!, kem_encaps!, kem_decaps!,\ndsa_sign!, dsa_verify!) that extract the per-algorithm boilerplate\nfrom cmd_keygen, cmd_encaps, cmd_decaps, cmd_sign, and cmd_verify.\n\nReduces 36 near-identical multi-line match arms to one-liner macro\ninvocations (-234/+166 lines net reduction in main.rs).\n\n* docs: update PLANS.md - match arm dedup completed (PR #31)",
+          "timestamp": "2026-02-02T23:29:51+09:00",
+          "tree_id": "a815c955d935d1323b7ce9a7c097b38aef04047d",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/14c6725e5bb8fdfef7a1e7aa9cb11d4e10c2fb91"
+        },
+        "date": 1770042977429,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 90150,
+            "range": "± 581",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 639445,
+            "range": "± 1882",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 101413,
+            "range": "± 2945",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 164708,
+            "range": "± 699",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 548482,
+            "range": "± 2108",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 161869,
+            "range": "± 3093",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 247835,
+            "range": "± 1001",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 580317,
+            "range": "± 2115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 265682,
+            "range": "± 3220",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 25344,
+            "range": "± 56",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 27811,
+            "range": "± 72",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 34625,
+            "range": "± 61",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 43673,
+            "range": "± 169",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 45323,
+            "range": "± 493",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 53899,
+            "range": "± 105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 69584,
+            "range": "± 139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 68697,
+            "range": "± 189",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 80031,
+            "range": "± 1068",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 3560807,
+            "range": "± 13186",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 83315961,
+            "range": "± 164874",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 4925135,
+            "range": "± 8571",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 5209096,
+            "range": "± 8683",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 134678539,
+            "range": "± 747906",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 7226637,
+            "range": "± 10031",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 13768906,
+            "range": "± 23400",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 276792126,
+            "range": "± 381708",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 7273174,
+            "range": "± 54121",
             "unit": "ns/iter"
           }
         ]
