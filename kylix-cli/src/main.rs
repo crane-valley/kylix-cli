@@ -728,14 +728,14 @@ fn cmd_encaps(
         eprintln!("Public key size: {} bytes", pk_bytes.len());
     }
 
-    let (ct_bytes, ss_bytes): (Vec<u8>, Vec<u8>) = match algo {
+    let (ct_bytes, ss_bytes_raw): (Vec<u8>, Vec<u8>) = match algo {
         Algorithm::MlKem512 => kem_encaps!(ml_kem::ml_kem_512, ml_kem::MlKem512, pk_bytes),
         Algorithm::MlKem768 => kem_encaps!(ml_kem::ml_kem_768, ml_kem::MlKem768, pk_bytes),
         Algorithm::MlKem1024 => kem_encaps!(ml_kem::ml_kem_1024, ml_kem::MlKem1024, pk_bytes),
         // detect_kem_algorithm only returns ML-KEM variants, so DSA variants are unreachable
         _ => unreachable!(),
     };
-    let ss_bytes = Zeroizing::new(ss_bytes);
+    let ss_bytes = Zeroizing::new(ss_bytes_raw);
 
     let ct_encoded = encode_output(&ct_bytes, format, "ML-KEM CIPHERTEXT");
 
@@ -799,7 +799,7 @@ fn cmd_decaps(
         eprintln!("Ciphertext size: {} bytes", ct_bytes.len());
     }
 
-    let ss_bytes: Vec<u8> = match algo {
+    let ss_bytes_raw: Vec<u8> = match algo {
         Algorithm::MlKem512 => {
             kem_decaps!(ml_kem::ml_kem_512, ml_kem::MlKem512, sk_bytes, ct_bytes)
         }
@@ -812,7 +812,7 @@ fn cmd_decaps(
         // detect_kem_algorithm only returns ML-KEM variants, so this is unreachable
         _ => unreachable!(),
     };
-    let ss_bytes = Zeroizing::new(ss_bytes);
+    let ss_bytes = Zeroizing::new(ss_bytes_raw);
 
     // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
 
