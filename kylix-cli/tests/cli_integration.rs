@@ -499,7 +499,7 @@ mod slh_dsa_roundtrip {
             .arg(sig_path.to_str().unwrap())
             .assert()
             .failure()
-            .stderr(predicate::str::contains("--algo"));
+            .stderr(predicate::str::contains("ambiguous").and(predicate::str::contains("--algo")));
     }
 }
 

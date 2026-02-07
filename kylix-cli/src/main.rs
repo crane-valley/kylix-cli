@@ -453,17 +453,25 @@ impl Algorithm {
     }
 
     /// Detect DSA algorithm from signing key size.
-    /// SLH-DSA s/f variants share key sizes, so auto-detection is ambiguous.
+    /// SLH-DSA small/fast variants share key sizes, so auto-detection is ambiguous.
     fn detect_dsa_from_signing_key(size: usize) -> Result<Self> {
         match size {
             MlDsa44::SIGNING_KEY_SIZE => Ok(Algorithm::MlDsa44),
             MlDsa65::SIGNING_KEY_SIZE => Ok(Algorithm::MlDsa65),
             MlDsa87::SIGNING_KEY_SIZE => Ok(Algorithm::MlDsa87),
-            SlhDsaShake128f::SIGNING_KEY_SIZE
-            | SlhDsaShake192f::SIGNING_KEY_SIZE
-            | SlhDsaShake256f::SIGNING_KEY_SIZE => bail!(
-                "SLH-DSA key detected ({} bytes) but -s/-f variant is ambiguous. \
+            SlhDsaShake128f::SIGNING_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
                  Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-128f).",
+                size
+            ),
+            SlhDsaShake192f::SIGNING_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-192f).",
+                size
+            ),
+            SlhDsaShake256f::SIGNING_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-256f).",
                 size
             ),
             _ => bail!(
@@ -474,17 +482,25 @@ impl Algorithm {
     }
 
     /// Detect DSA algorithm from verification key size.
-    /// SLH-DSA s/f variants share key sizes, so auto-detection is ambiguous.
+    /// SLH-DSA small/fast variants share key sizes, so auto-detection is ambiguous.
     fn detect_dsa_from_verification_key(size: usize) -> Result<Self> {
         match size {
             MlDsa44::VERIFICATION_KEY_SIZE => Ok(Algorithm::MlDsa44),
             MlDsa65::VERIFICATION_KEY_SIZE => Ok(Algorithm::MlDsa65),
             MlDsa87::VERIFICATION_KEY_SIZE => Ok(Algorithm::MlDsa87),
-            SlhDsaShake128f::VERIFICATION_KEY_SIZE
-            | SlhDsaShake192f::VERIFICATION_KEY_SIZE
-            | SlhDsaShake256f::VERIFICATION_KEY_SIZE => bail!(
-                "SLH-DSA key detected ({} bytes) but -s/-f variant is ambiguous. \
+            SlhDsaShake128f::VERIFICATION_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
                  Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-128f).",
+                size
+            ),
+            SlhDsaShake192f::VERIFICATION_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-192f).",
+                size
+            ),
+            SlhDsaShake256f::VERIFICATION_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-256f).",
                 size
             ),
             _ => bail!(
