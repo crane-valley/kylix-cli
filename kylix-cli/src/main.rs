@@ -752,9 +752,9 @@ fn cmd_encaps(
     // Always output shared secret to stdout (or stderr if ciphertext goes to stdout)
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     if output.is_some() {
-        println!("Shared secret: {}", *ss_encoded);
+        println!("Shared secret: {}", &*ss_encoded);
     } else {
-        eprintln!("Shared secret: {}", *ss_encoded);
+        eprintln!("Shared secret: {}", &*ss_encoded);
     }
 
     if verbose {
@@ -817,7 +817,7 @@ fn cmd_decaps(
     // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
 
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
-    println!("{}", *ss_encoded);
+    println!("{}", &*ss_encoded);
 
     if verbose {
         eprintln!("Shared secret size: {} bytes", ss_bytes.len());
