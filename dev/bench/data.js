@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770462841046,
+  "lastUpdate": 1770462879707,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -5207,6 +5207,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 7206730,
             "range": "± 16472",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e4a4d3603f12bb064d9e76f07df9d896e4c1dcc4",
+          "message": "fix: address security and quality findings from codebase review (#33)\n\n* fix: address security and quality findings from codebase review\n\n- [H-1] Add eprintln warning for unprotected secret key file on non-Unix\n- [H-3] Zeroize encoded secret key string after writing to disk\n- [M-1] Return error for ambiguous SLH-DSA s/f auto-detection, require --algo\n- [L-1] Use Zeroizing wrapper for shared secrets and secret key bytes\n        in cmd_encaps, cmd_decaps, and cmd_sign\n- [L-4] Replace HashMap with BTreeMap in bench comparison for deterministic output\n- [M-5] Add SLH-DSA integration tests (128f roundtrip, --algo requirement)\n        and include all SLH-DSA variants in test_keygen_all_algorithms\n- Update PLANS.md with completed and deferred review findings\n\n* fix: address PR review comments\n\n- Reword ambiguous variant error: \"-s/-f\" → \"small vs fast\" to avoid\n  confusion with CLI flags\n- Split SLH-DSA error arms by key size for context-specific --algo\n  examples (128f, 192f, 256f)\n- Tighten test assertion: check for both \"ambiguous\" and \"--algo\" in\n  stderr\n\n* fix: address second round of PR review comments\n\n- Show both s/f variants in ambiguous SLH-DSA error messages\n  (e.g. \"slh-dsa-shake-128s or slh-dsa-shake-128f\")\n- Wrap sk_encoded in Zeroizing<String> (cmd_keygen) for error-path safety\n- Wrap ss_encoded in Zeroizing<String> (cmd_encaps, cmd_decaps)\n- Wrap sk_data in Zeroizing<String> (cmd_decaps, cmd_sign) to ensure\n  zeroization even if decode_input fails\n- Remove unused Zeroize import (only Zeroizing needed now)\n- Add test_slh_dsa_verify_without_algo_fails integration test\n\n* fix: use explicit borrow for Zeroizing<String> deref in print macros\n\nChange *ss_encoded to &*ss_encoded to avoid implicit copy/move\nsemantics when passing Zeroizing<String> to println!/eprintln!.\n\n* fix: pass Path directly to .arg() instead of to_str().unwrap()\n\nCommand::arg() accepts AsRef<OsStr>, so converting to &str is\nunnecessary and would panic on non-UTF8 paths.\n\n* fix: avoid shadowing ss_bytes with Zeroizing wrapper\n\nRename raw match result to ss_bytes_raw before wrapping in\nZeroizing::new() for clearer ownership flow in cmd_encaps/cmd_decaps.\n\n* docs: add follow-up items from PR #33 review to PLANS.md\n\n- [M-4] Deep zeroization in encode_output/decode_input\n- [L-5] Windows ACL for secret key files\n\n* fix: use single-line string for Windows permission warning\n\nAvoids any ambiguity about whitespace with line continuation.\n\n* fix: drop Zeroizing wrappers early to minimize secret exposure time\n\n- drop(sk_encoded) immediately after write_secret_file in cmd_keygen\n- drop(sk_data) immediately after decode_input in cmd_decaps/cmd_sign\n\n* fix: drop secret data early in cmd_encaps, cmd_decaps, cmd_sign\n\n- drop(ss_bytes) and drop(ss_encoded) after output in cmd_encaps\n- drop(sk_bytes) after decapsulation, drop(ss_bytes/ss_encoded) after\n  output in cmd_decaps\n- drop(sk_bytes) after signing in cmd_sign",
+          "timestamp": "2026-02-07T20:08:06+09:00",
+          "tree_id": "f7d497923d11d9fc14f13e69f62522294580c4f3",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/e4a4d3603f12bb064d9e76f07df9d896e4c1dcc4"
+        },
+        "date": 1770462878698,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 96503,
+            "range": "± 535",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 713357,
+            "range": "± 15972",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 114009,
+            "range": "± 332",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 172558,
+            "range": "± 460",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 612990,
+            "range": "± 1441",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 182003,
+            "range": "± 559",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 262327,
+            "range": "± 1230",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 652473,
+            "range": "± 746",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 296603,
+            "range": "± 887",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 25512,
+            "range": "± 255",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 28334,
+            "range": "± 68",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 35343,
+            "range": "± 804",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 44420,
+            "range": "± 222",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 46587,
+            "range": "± 90",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 55094,
+            "range": "± 217",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 71081,
+            "range": "± 136",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 70999,
+            "range": "± 203",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 81683,
+            "range": "± 824",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 3551146,
+            "range": "± 7613",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 82928659,
+            "range": "± 101192",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 4933058,
+            "range": "± 101335",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 5195742,
+            "range": "± 23380",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 134127534,
+            "range": "± 157600",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 7218676,
+            "range": "± 28292",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 13657548,
+            "range": "± 237444",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 274196679,
+            "range": "± 1038376",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 7218277,
+            "range": "± 15723",
             "unit": "ns/iter"
           }
         ]
