@@ -697,7 +697,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
     fs::write(&pub_path, &pk_encoded).context("Failed to write public key")?;
     // Use restrictive permissions (0o600) for secret key on Unix
     write_secret_file(&sec_path, &sk_encoded)?;
-    // sk_encoded is Zeroizing<String>, automatically zeroized on drop
+    drop(sk_encoded); // zeroize encoded secret key immediately after writing
 
     if verbose {
         eprintln!("Public key size: {} bytes", pk_size);
@@ -775,6 +775,7 @@ fn cmd_decaps(
     let sk_data =
         Zeroizing::new(fs::read_to_string(key).context("Failed to read secret key file")?);
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
+    drop(sk_data); // zeroize raw key string immediately after decoding
 
     let algo = Algorithm::detect_kem_from_sec_key(sk_bytes.len())?;
 
@@ -839,6 +840,7 @@ fn cmd_sign(
     let sk_data =
         Zeroizing::new(fs::read_to_string(key).context("Failed to read signing key file")?);
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
+    drop(sk_data); // zeroize raw key string immediately after decoding
 
     // Use explicit algorithm if provided, otherwise detect from key size
     let algo = if let Some(a) = explicit_algo {
