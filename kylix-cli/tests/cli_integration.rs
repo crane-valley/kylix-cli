@@ -501,6 +501,48 @@ mod slh_dsa_roundtrip {
             .failure()
             .stderr(predicate::str::contains("ambiguous").and(predicate::str::contains("--algo")));
     }
+
+    #[test]
+    fn test_slh_dsa_verify_without_algo_fails() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let msg_path = tmp.path().join("message.txt");
+        let sig_path = tmp.path().join("signature");
+
+        fs::write(&msg_path, b"test message").unwrap();
+
+        // Generate SLH-DSA keys
+        kylix()
+            .args(["keygen", "-a", "slh-dsa-shake-128f", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        // Sign with explicit --algo (required)
+        kylix()
+            .args(["sign", "--key"])
+            .arg(tmp.path().join("key.sec").to_str().unwrap())
+            .arg("-i")
+            .arg(msg_path.to_str().unwrap())
+            .arg("-o")
+            .arg(sig_path.to_str().unwrap())
+            .arg("--algo")
+            .arg("slh-dsa-shake-128f")
+            .assert()
+            .success();
+
+        // Verify without --algo should fail (ambiguous small/fast variant)
+        kylix()
+            .args(["verify", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("-i")
+            .arg(msg_path.to_str().unwrap())
+            .arg("-s")
+            .arg(sig_path.to_str().unwrap())
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("ambiguous").and(predicate::str::contains("--algo")));
+    }
 }
 
 mod error_handling {

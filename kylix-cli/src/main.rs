@@ -20,7 +20,7 @@ use std::io::{self, Read};
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::PathBuf;
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroizing;
 
 // Algorithm dispatch macros — eliminate per-variant boilerplate in cmd_* functions.
 
@@ -461,17 +461,20 @@ impl Algorithm {
             MlDsa87::SIGNING_KEY_SIZE => Ok(Algorithm::MlDsa87),
             SlhDsaShake128f::SIGNING_KEY_SIZE => bail!(
                 "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
-                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-128f).",
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-128s or slh-dsa-shake-128f).",
                 size
             ),
             SlhDsaShake192f::SIGNING_KEY_SIZE => bail!(
                 "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
-                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-192f).",
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-192s or slh-dsa-shake-192f).",
                 size
             ),
             SlhDsaShake256f::SIGNING_KEY_SIZE => bail!(
                 "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
-                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-256f).",
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-256s or slh-dsa-shake-256f).",
                 size
             ),
             _ => bail!(
@@ -490,17 +493,20 @@ impl Algorithm {
             MlDsa87::VERIFICATION_KEY_SIZE => Ok(Algorithm::MlDsa87),
             SlhDsaShake128f::VERIFICATION_KEY_SIZE => bail!(
                 "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
-                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-128f).",
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-128s or slh-dsa-shake-128f).",
                 size
             ),
             SlhDsaShake192f::VERIFICATION_KEY_SIZE => bail!(
                 "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
-                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-192f).",
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-192s or slh-dsa-shake-192f).",
                 size
             ),
             SlhDsaShake256f::VERIFICATION_KEY_SIZE => bail!(
                 "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
-                 Please specify the algorithm explicitly with --algo (e.g. --algo slh-dsa-shake-256f).",
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-256s or slh-dsa-shake-256f).",
                 size
             ),
             _ => bail!(
@@ -683,7 +689,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
     let sk_size = sk_bytes.len();
 
     let pk_encoded = encode_output(&pk_bytes, format, pk_label);
-    let mut sk_encoded = encode_output(&sk_bytes, format, sk_label);
+    let sk_encoded = Zeroizing::new(encode_output(&sk_bytes, format, sk_label));
     // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
 
     let pub_path = format!("{}.pub", output);
@@ -692,9 +698,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
     fs::write(&pub_path, &pk_encoded).context("Failed to write public key")?;
     // Use restrictive permissions (0o600) for secret key on Unix
     write_secret_file(&sec_path, &sk_encoded)?;
-
-    // Zeroize the encoded secret key string after writing to disk
-    sk_encoded.zeroize();
+    // sk_encoded is Zeroizing<String>, automatically zeroized on drop
 
     if verbose {
         eprintln!("Public key size: {} bytes", pk_size);
@@ -746,18 +750,18 @@ fn cmd_encaps(
     }
 
     // Always output shared secret to stdout (or stderr if ciphertext goes to stdout)
-    let ss_encoded = encode_output(&ss_bytes, format, "SHARED SECRET");
+    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     if output.is_some() {
-        println!("Shared secret: {}", ss_encoded);
+        println!("Shared secret: {}", *ss_encoded);
     } else {
-        eprintln!("Shared secret: {}", ss_encoded);
+        eprintln!("Shared secret: {}", *ss_encoded);
     }
 
     if verbose {
         eprintln!("Shared secret size: {} bytes", ss_bytes.len());
     }
 
-    // ss_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
+    // ss_bytes and ss_encoded are Zeroizing, automatically zeroized on drop
 
     Ok(())
 }
@@ -769,11 +773,9 @@ fn cmd_decaps(
     format: OutputFormat,
     verbose: bool,
 ) -> Result<()> {
-    let mut sk_data = fs::read_to_string(key).context("Failed to read secret key file")?;
+    let sk_data =
+        Zeroizing::new(fs::read_to_string(key).context("Failed to read secret key file")?);
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
-
-    // Zeroize raw string data immediately after decoding
-    sk_data.zeroize();
 
     let algo = Algorithm::detect_kem_from_sec_key(sk_bytes.len())?;
 
@@ -814,14 +816,14 @@ fn cmd_decaps(
 
     // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
 
-    let ss_encoded = encode_output(&ss_bytes, format, "SHARED SECRET");
-    println!("{}", ss_encoded);
+    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
+    println!("{}", *ss_encoded);
 
     if verbose {
         eprintln!("Shared secret size: {} bytes", ss_bytes.len());
     }
 
-    // ss_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
+    // sk_data, sk_bytes, ss_bytes, ss_encoded are all Zeroizing, automatically zeroized on drop
 
     Ok(())
 }
@@ -835,11 +837,9 @@ fn cmd_sign(
     explicit_algo: Option<Algorithm>,
     verbose: bool,
 ) -> Result<()> {
-    let mut sk_data = fs::read_to_string(key).context("Failed to read signing key file")?;
+    let sk_data =
+        Zeroizing::new(fs::read_to_string(key).context("Failed to read signing key file")?);
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
-
-    // Zeroize the raw string data immediately after decoding
-    sk_data.zeroize();
 
     // Use explicit algorithm if provided, otherwise detect from key size
     let algo = if let Some(a) = explicit_algo {
