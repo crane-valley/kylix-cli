@@ -37,6 +37,8 @@ criterion = { version = "0.8", features = ["html_reports"] }
 # Without this, kylix-pqc runs at opt-level=0 and is ~100x slower.
 [profile.dev.package.kylix-pqc]
 opt-level = 2
+[profile.test.package.kylix-pqc]
+opt-level = 2
 
 [profile.release]
 lto = true
