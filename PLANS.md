@@ -20,6 +20,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | Tool Detection Refactor | HIGH | PR #25 merged - Environment variable support for OpenSSL/liboqs |
 | Match Arm Dedup | MEDIUM | PR #31 - 6 dispatch macros to deduplicate 36 match arms across 5 cmd_* functions |
 | Review Findings Fix | HIGH | [H-1] Windows permission warning, [H-3] Zeroize sk_encoded, [M-1] SLH-DSA ambiguous detection error, [L-1] Zeroizing wrappers, [L-4] BTreeMap for deterministic output, [M-5] SLH-DSA integration tests |
+| Bench Release Build Fix | HIGH | `--release` missing from external-tool-compare CI job, causing ~100x slowdown vs liboqs |
 
 ---
 

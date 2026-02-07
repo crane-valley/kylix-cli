@@ -95,7 +95,7 @@ jobs:
           git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
           cd /tmp/liboqs
           mkdir build && cd build
-          cmake -GNinja -DBUILD_SHARED_LIBS=OFF -DOQS_BUILD_ONLY_LIB=OFF ..
+          cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DOQS_BUILD_ONLY_LIB=OFF ..
           ninja
 
       - name: Verify liboqs build
@@ -109,9 +109,9 @@ jobs:
           CARGO_TERM_COLOR: never
         run: |
           # Build first to separate compile output from benchmark output
-          cargo build -p kylix-cli --features bench --quiet
+          cargo build -p kylix-cli --features bench --release --quiet
           # Run benchmark and capture only program output
-          cargo run -p kylix-cli --features bench --quiet -- bench --compare --with liboqs -a ml-kem-768 -i 100 --report markdown | tee bench-result.md
+          cargo run -p kylix-cli --features bench --release --quiet -- bench --compare --with liboqs -a ml-kem-768 -i 100 --report markdown | tee bench-result.md
           # Fail if liboqs was not detected (output should contain "liboqs" in the table)
           grep -q "liboqs" bench-result.md || { echo "Error: liboqs not detected in benchmark output"; exit 1; }
 
