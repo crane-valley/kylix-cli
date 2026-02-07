@@ -749,18 +749,19 @@ fn cmd_encaps(
     }
 
     // Always output shared secret to stdout (or stderr if ciphertext goes to stdout)
+    let ss_len = ss_bytes.len();
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
+    drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
     if output.is_some() {
         println!("Shared secret: {}", &*ss_encoded);
     } else {
         eprintln!("Shared secret: {}", &*ss_encoded);
     }
+    drop(ss_encoded); // zeroize encoded shared secret immediately after output
 
     if verbose {
-        eprintln!("Shared secret size: {} bytes", ss_bytes.len());
+        eprintln!("Shared secret size: {} bytes", ss_len);
     }
-
-    // ss_bytes and ss_encoded are Zeroizing, automatically zeroized on drop
 
     Ok(())
 }
@@ -813,17 +814,17 @@ fn cmd_decaps(
         _ => unreachable!(),
     };
     let ss_bytes = Zeroizing::new(ss_bytes_raw);
+    drop(sk_bytes); // zeroize secret key bytes immediately after decapsulation
 
-    // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
-
+    let ss_len = ss_bytes.len();
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
+    drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
     println!("{}", &*ss_encoded);
+    drop(ss_encoded); // zeroize encoded shared secret immediately after output
 
     if verbose {
-        eprintln!("Shared secret size: {} bytes", ss_bytes.len());
+        eprintln!("Shared secret size: {} bytes", ss_len);
     }
-
-    // sk_data, sk_bytes, ss_bytes, ss_encoded are all Zeroizing, automatically zeroized on drop
 
     Ok(())
 }
@@ -927,8 +928,7 @@ fn cmd_sign(
         }
         _ => bail!("Algorithm {} does not support signing", algo),
     };
-
-    // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
+    drop(sk_bytes); // zeroize signing key bytes immediately after signing
 
     let sig_label = if algo.is_slh_dsa() {
         "SLH-DSA SIGNATURE"
