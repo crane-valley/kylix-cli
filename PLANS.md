@@ -34,6 +34,8 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | [H-2] Shared Secret Output Control | HIGH | Add --secret-file option to avoid printing shared secrets to stdout |
 | [M-2] Split main.rs into Modules | MEDIUM | Separate cmd_* functions, algorithm definitions, and I/O helpers into modules |
 | [M-3] Input Format Disambiguation | MEDIUM | Improve hex vs base64 auto-detection for edge cases |
+| [M-4] Deep Zeroization in encode/decode | MEDIUM | Zeroize intermediate strings in `encode_output`/`decode_input` (PEM wrapping, base64) |
+| [L-5] Windows ACL for Secret Keys | LOW | Enforce restrictive ACLs on secret key files on Windows (e.g. `windows-acl` crate) |
 
 ---
 
