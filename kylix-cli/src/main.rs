@@ -650,8 +650,7 @@ fn write_secret_file(path: &str, content: &str) -> Result<()> {
     #[cfg(not(unix))]
     {
         eprintln!(
-            "Warning: file permissions cannot be restricted on this platform. \
-             Secret key file '{}' may be readable by other users.",
+            "Warning: file permissions cannot be restricted on this platform. Secret key file '{}' may be readable by other users.",
             path
         );
         fs::write(path, content)
