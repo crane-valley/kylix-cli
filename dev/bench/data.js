@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770464414221,
+  "lastUpdate": 1770464415302,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -5579,6 +5579,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 6957368,
             "range": "± 158562",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2bd3a0b64cd3409a4b6cbb1da8bf3cc2d3eea8bc",
+          "message": "fix: use release builds in external-tool-compare CI benchmark (#35)\n\n* fix: use release builds in external-tool-compare CI benchmark\n\nThe external-tool-compare job was running cargo build/run without\n--release, causing kylix-cli to benchmark at opt-level=0 (debug mode)\nwhile liboqs ran as a native C binary — producing a misleading ~100x\nperformance gap. With release builds, the actual gap is ~1.5-2x.\n\nChanges:\n- Add --release to cargo build/run in bench.yml external-tool-compare\n- Add -DCMAKE_BUILD_TYPE=Release to liboqs cmake build\n- Add profile.dev.package.kylix-pqc opt-level=2 for dev/test builds\n\n* fix: add test profile optimization for kylix-pqc",
+          "timestamp": "2026-02-07T20:33:31+09:00",
+          "tree_id": "2160ea381919d862503cb72a623b19ecff2baca1",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/2bd3a0b64cd3409a4b6cbb1da8bf3cc2d3eea8bc"
+        },
+        "date": 1770464414317,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 97092,
+            "range": "± 764",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 714317,
+            "range": "± 8020",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 114130,
+            "range": "± 270",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 173868,
+            "range": "± 730",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 612791,
+            "range": "± 1360",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 182200,
+            "range": "± 382",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 261791,
+            "range": "± 1265",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 654207,
+            "range": "± 5338",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 296987,
+            "range": "± 1578",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 25497,
+            "range": "± 49",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 28320,
+            "range": "± 72",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 35356,
+            "range": "± 86",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 44367,
+            "range": "± 88",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 46580,
+            "range": "± 329",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 55193,
+            "range": "± 177",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 71083,
+            "range": "± 136",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 71059,
+            "range": "± 347",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 81638,
+            "range": "± 316",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 3583140,
+            "range": "± 30470",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 83717858,
+            "range": "± 260264",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 4903750,
+            "range": "± 15299",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 5236959,
+            "range": "± 29638",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 134820051,
+            "range": "± 283422",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 7205212,
+            "range": "± 14997",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 13667695,
+            "range": "± 29294",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 274935601,
+            "range": "± 1082876",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 7219750,
+            "range": "± 40246",
             "unit": "ns/iter"
           }
         ]
