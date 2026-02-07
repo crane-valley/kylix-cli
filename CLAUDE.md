@@ -17,7 +17,7 @@
 Before committing or creating a PR, always run:
 1. `cargo fmt --all` - Format all code
 2. `cargo clippy --workspace --all-features -- -D warnings` - Check for lints
-3. `cargo clippy --workspace --no-default-features -- -D warnings` - Check no_std build
+3. `cargo clippy --workspace --no-default-features -- -D warnings` - Check for lints (no default features)
 4. `cargo test --workspace --all-features` - Run tests
 
 ## Release
