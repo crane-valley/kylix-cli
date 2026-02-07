@@ -148,6 +148,12 @@ mod keygen_command {
             "ml-dsa-44",
             "ml-dsa-65",
             "ml-dsa-87",
+            "slh-dsa-shake-128s",
+            "slh-dsa-shake-128f",
+            "slh-dsa-shake-192s",
+            "slh-dsa-shake-192f",
+            "slh-dsa-shake-256s",
+            "slh-dsa-shake-256f",
         ];
 
         for algo in algorithms {
@@ -409,6 +415,133 @@ mod sign_verify_roundtrip {
             .assert()
             .failure()
             .stderr(predicate::str::contains("verification failed"));
+    }
+}
+
+mod slh_dsa_roundtrip {
+    use super::*;
+
+    /// Helper function to test SLH-DSA sign/verify roundtrip.
+    /// SLH-DSA requires explicit --algo since s/f variants share key sizes.
+    fn test_slh_dsa_roundtrip(algo: &str, message: &[u8]) {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let msg_path = tmp.path().join("message.txt");
+        let sig_path = tmp.path().join("signature");
+
+        // Create test message
+        fs::write(&msg_path, message).unwrap();
+
+        // Generate keys
+        kylix()
+            .args(["keygen", "-a", algo, "-o"])
+            .arg(&key_path)
+            .assert()
+            .success();
+
+        // Sign (must pass --algo for SLH-DSA)
+        kylix()
+            .args(["sign", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&msg_path)
+            .arg("-o")
+            .arg(&sig_path)
+            .arg("--algo")
+            .arg(algo)
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Signature written to"));
+
+        // Verify (must pass --algo for SLH-DSA)
+        kylix()
+            .args(["verify", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-i")
+            .arg(&msg_path)
+            .arg("-s")
+            .arg(&sig_path)
+            .arg("--algo")
+            .arg(algo)
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Signature is valid"));
+    }
+
+    #[test]
+    fn test_slh_dsa_shake_128f_roundtrip() {
+        test_slh_dsa_roundtrip("slh-dsa-shake-128f", b"Hello, SLH-DSA!");
+    }
+
+    #[test]
+    fn test_slh_dsa_sign_without_algo_fails() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let msg_path = tmp.path().join("message.txt");
+        let sig_path = tmp.path().join("signature");
+
+        fs::write(&msg_path, b"test message").unwrap();
+
+        // Generate SLH-DSA keys
+        kylix()
+            .args(["keygen", "-a", "slh-dsa-shake-128f", "-o"])
+            .arg(&key_path)
+            .assert()
+            .success();
+
+        // Sign without --algo should fail (ambiguous s/f variant)
+        kylix()
+            .args(["sign", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&msg_path)
+            .arg("-o")
+            .arg(&sig_path)
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("ambiguous").and(predicate::str::contains("--algo")));
+    }
+
+    #[test]
+    fn test_slh_dsa_verify_without_algo_fails() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let msg_path = tmp.path().join("message.txt");
+        let sig_path = tmp.path().join("signature");
+
+        fs::write(&msg_path, b"test message").unwrap();
+
+        // Generate SLH-DSA keys
+        kylix()
+            .args(["keygen", "-a", "slh-dsa-shake-128f", "-o"])
+            .arg(&key_path)
+            .assert()
+            .success();
+
+        // Sign with explicit --algo (required)
+        kylix()
+            .args(["sign", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&msg_path)
+            .arg("-o")
+            .arg(&sig_path)
+            .arg("--algo")
+            .arg("slh-dsa-shake-128f")
+            .assert()
+            .success();
+
+        // Verify without --algo should fail (ambiguous small/fast variant)
+        kylix()
+            .args(["verify", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-i")
+            .arg(&msg_path)
+            .arg("-s")
+            .arg(&sig_path)
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("ambiguous").and(predicate::str::contains("--algo")));
     }
 }
 

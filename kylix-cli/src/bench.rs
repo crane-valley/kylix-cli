@@ -680,8 +680,8 @@ fn format_comparison_table(
     report_format: ReportFormat,
 ) -> String {
     // Group results by algorithm
-    let mut by_algo: std::collections::HashMap<String, Vec<(&str, &str, f64)>> =
-        std::collections::HashMap::new();
+    let mut by_algo: std::collections::BTreeMap<String, Vec<(&str, &str, f64)>> =
+        std::collections::BTreeMap::new();
 
     // Add Kylix results
     for r in kylix_results {
@@ -712,7 +712,7 @@ fn format_comparison_table(
 }
 
 fn format_comparison_text(
-    by_algo: &std::collections::HashMap<String, Vec<(&str, &str, f64)>>,
+    by_algo: &std::collections::BTreeMap<String, Vec<(&str, &str, f64)>>,
     has_openssl: bool,
 ) -> String {
     let mut output = String::new();
@@ -733,14 +733,14 @@ fn format_comparison_text(
         output.push('\n');
 
         // Group by tool
-        let mut by_tool: std::collections::HashMap<&str, Vec<(&str, f64)>> =
-            std::collections::HashMap::new();
+        let mut by_tool: std::collections::BTreeMap<&str, Vec<(&str, f64)>> =
+            std::collections::BTreeMap::new();
         for (tool, op, time) in results {
             by_tool.entry(*tool).or_default().push((*op, *time));
         }
 
         // Find Kylix times for comparison
-        let kylix_times: std::collections::HashMap<&str, f64> = by_tool
+        let kylix_times: std::collections::BTreeMap<&str, f64> = by_tool
             .get("Kylix")
             .map(|v| v.iter().cloned().collect())
             .unwrap_or_default();
@@ -777,7 +777,7 @@ fn format_comparison_text(
 }
 
 fn format_comparison_markdown(
-    by_algo: &std::collections::HashMap<String, Vec<(&str, &str, f64)>>,
+    by_algo: &std::collections::BTreeMap<String, Vec<(&str, &str, f64)>>,
     has_openssl: bool,
 ) -> String {
     let mut output = String::new();

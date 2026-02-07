@@ -20,7 +20,7 @@ use std::io::{self, Read};
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::PathBuf;
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroizing;
 
 // Algorithm dispatch macros — eliminate per-variant boilerplate in cmd_* functions.
 
@@ -453,15 +453,30 @@ impl Algorithm {
     }
 
     /// Detect DSA algorithm from signing key size.
-    /// Note: SLH-DSA 128s/128f have same key sizes; defaults to 128f.
+    /// SLH-DSA small/fast variants share key sizes, so auto-detection is ambiguous.
     fn detect_dsa_from_signing_key(size: usize) -> Result<Self> {
         match size {
             MlDsa44::SIGNING_KEY_SIZE => Ok(Algorithm::MlDsa44),
             MlDsa65::SIGNING_KEY_SIZE => Ok(Algorithm::MlDsa65),
             MlDsa87::SIGNING_KEY_SIZE => Ok(Algorithm::MlDsa87),
-            SlhDsaShake128f::SIGNING_KEY_SIZE => Ok(Algorithm::SlhDsaShake128f),
-            SlhDsaShake192f::SIGNING_KEY_SIZE => Ok(Algorithm::SlhDsaShake192f),
-            SlhDsaShake256f::SIGNING_KEY_SIZE => Ok(Algorithm::SlhDsaShake256f),
+            SlhDsaShake128f::SIGNING_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-128s or slh-dsa-shake-128f).",
+                size
+            ),
+            SlhDsaShake192f::SIGNING_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-192s or slh-dsa-shake-192f).",
+                size
+            ),
+            SlhDsaShake256f::SIGNING_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-256s or slh-dsa-shake-256f).",
+                size
+            ),
             _ => bail!(
                 "Unknown signing key size: {} bytes. Expected ML-DSA (2560/4032/4896) or SLH-DSA (64/96/128).",
                 size
@@ -470,15 +485,30 @@ impl Algorithm {
     }
 
     /// Detect DSA algorithm from verification key size.
-    /// Note: SLH-DSA 128s/128f have same key sizes; defaults to 128f.
+    /// SLH-DSA small/fast variants share key sizes, so auto-detection is ambiguous.
     fn detect_dsa_from_verification_key(size: usize) -> Result<Self> {
         match size {
             MlDsa44::VERIFICATION_KEY_SIZE => Ok(Algorithm::MlDsa44),
             MlDsa65::VERIFICATION_KEY_SIZE => Ok(Algorithm::MlDsa65),
             MlDsa87::VERIFICATION_KEY_SIZE => Ok(Algorithm::MlDsa87),
-            SlhDsaShake128f::VERIFICATION_KEY_SIZE => Ok(Algorithm::SlhDsaShake128f),
-            SlhDsaShake192f::VERIFICATION_KEY_SIZE => Ok(Algorithm::SlhDsaShake192f),
-            SlhDsaShake256f::VERIFICATION_KEY_SIZE => Ok(Algorithm::SlhDsaShake256f),
+            SlhDsaShake128f::VERIFICATION_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-128s or slh-dsa-shake-128f).",
+                size
+            ),
+            SlhDsaShake192f::VERIFICATION_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-192s or slh-dsa-shake-192f).",
+                size
+            ),
+            SlhDsaShake256f::VERIFICATION_KEY_SIZE => bail!(
+                "SLH-DSA key detected ({} bytes) but small vs fast variant is ambiguous. \
+                 Please specify the algorithm explicitly with --algo \
+                 (e.g. --algo slh-dsa-shake-256s or slh-dsa-shake-256f).",
+                size
+            ),
             _ => bail!(
                 "Unknown verification key size: {} bytes. Expected ML-DSA (1312/1952/2592) or SLH-DSA (32/48/64).",
                 size
@@ -619,6 +649,10 @@ fn write_secret_file(path: &str, content: &str) -> Result<()> {
     }
     #[cfg(not(unix))]
     {
+        eprintln!(
+            "Warning: file permissions cannot be restricted on this platform. Secret key file '{}' may be readable by other users.",
+            path
+        );
         fs::write(path, content)
             .with_context(|| format!("Failed to write secret key file: {}", path))?;
         Ok(())
@@ -654,7 +688,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
     let sk_size = sk_bytes.len();
 
     let pk_encoded = encode_output(&pk_bytes, format, pk_label);
-    let sk_encoded = encode_output(&sk_bytes, format, sk_label);
+    let sk_encoded = Zeroizing::new(encode_output(&sk_bytes, format, sk_label));
     // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
 
     let pub_path = format!("{}.pub", output);
@@ -663,6 +697,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
     fs::write(&pub_path, &pk_encoded).context("Failed to write public key")?;
     // Use restrictive permissions (0o600) for secret key on Unix
     write_secret_file(&sec_path, &sk_encoded)?;
+    drop(sk_encoded); // zeroize encoded secret key immediately after writing
 
     if verbose {
         eprintln!("Public key size: {} bytes", pk_size);
@@ -692,13 +727,14 @@ fn cmd_encaps(
         eprintln!("Public key size: {} bytes", pk_bytes.len());
     }
 
-    let (ct_bytes, mut ss_bytes): (Vec<u8>, Vec<u8>) = match algo {
+    let (ct_bytes, ss_bytes_raw): (Vec<u8>, Vec<u8>) = match algo {
         Algorithm::MlKem512 => kem_encaps!(ml_kem::ml_kem_512, ml_kem::MlKem512, pk_bytes),
         Algorithm::MlKem768 => kem_encaps!(ml_kem::ml_kem_768, ml_kem::MlKem768, pk_bytes),
         Algorithm::MlKem1024 => kem_encaps!(ml_kem::ml_kem_1024, ml_kem::MlKem1024, pk_bytes),
         // detect_kem_algorithm only returns ML-KEM variants, so DSA variants are unreachable
         _ => unreachable!(),
     };
+    let ss_bytes = Zeroizing::new(ss_bytes_raw);
 
     let ct_encoded = encode_output(&ct_bytes, format, "ML-KEM CIPHERTEXT");
 
@@ -713,19 +749,19 @@ fn cmd_encaps(
     }
 
     // Always output shared secret to stdout (or stderr if ciphertext goes to stdout)
-    let ss_encoded = encode_output(&ss_bytes, format, "SHARED SECRET");
+    let ss_len = ss_bytes.len();
+    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
+    drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
     if output.is_some() {
-        println!("Shared secret: {}", ss_encoded);
+        println!("Shared secret: {}", &*ss_encoded);
     } else {
-        eprintln!("Shared secret: {}", ss_encoded);
+        eprintln!("Shared secret: {}", &*ss_encoded);
     }
+    drop(ss_encoded); // zeroize encoded shared secret immediately after output
 
     if verbose {
-        eprintln!("Shared secret size: {} bytes", ss_bytes.len());
+        eprintln!("Shared secret size: {} bytes", ss_len);
     }
-
-    // Zeroize shared secret after output
-    ss_bytes.zeroize();
 
     Ok(())
 }
@@ -737,11 +773,10 @@ fn cmd_decaps(
     format: OutputFormat,
     verbose: bool,
 ) -> Result<()> {
-    let mut sk_data = fs::read_to_string(key).context("Failed to read secret key file")?;
-    let mut sk_bytes = decode_input(&sk_data, format)?;
-
-    // Zeroize raw string data immediately after decoding
-    sk_data.zeroize();
+    let sk_data =
+        Zeroizing::new(fs::read_to_string(key).context("Failed to read secret key file")?);
+    let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
+    drop(sk_data); // zeroize raw key string immediately after decoding
 
     let algo = Algorithm::detect_kem_from_sec_key(sk_bytes.len())?;
 
@@ -765,7 +800,7 @@ fn cmd_decaps(
         eprintln!("Ciphertext size: {} bytes", ct_bytes.len());
     }
 
-    let mut ss_bytes: Vec<u8> = match algo {
+    let ss_bytes_raw: Vec<u8> = match algo {
         Algorithm::MlKem512 => {
             kem_decaps!(ml_kem::ml_kem_512, ml_kem::MlKem512, sk_bytes, ct_bytes)
         }
@@ -778,19 +813,18 @@ fn cmd_decaps(
         // detect_kem_algorithm only returns ML-KEM variants, so this is unreachable
         _ => unreachable!(),
     };
+    let ss_bytes = Zeroizing::new(ss_bytes_raw);
+    drop(sk_bytes); // zeroize secret key bytes immediately after decapsulation
 
-    // Zeroize secret key bytes after decapsulation
-    sk_bytes.zeroize();
-
-    let ss_encoded = encode_output(&ss_bytes, format, "SHARED SECRET");
-    println!("{}", ss_encoded);
+    let ss_len = ss_bytes.len();
+    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
+    drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
+    println!("{}", &*ss_encoded);
+    drop(ss_encoded); // zeroize encoded shared secret immediately after output
 
     if verbose {
-        eprintln!("Shared secret size: {} bytes", ss_bytes.len());
+        eprintln!("Shared secret size: {} bytes", ss_len);
     }
-
-    // Zeroize shared secret after output
-    ss_bytes.zeroize();
 
     Ok(())
 }
@@ -804,11 +838,10 @@ fn cmd_sign(
     explicit_algo: Option<Algorithm>,
     verbose: bool,
 ) -> Result<()> {
-    let mut sk_data = fs::read_to_string(key).context("Failed to read signing key file")?;
-    let mut sk_bytes = decode_input(&sk_data, format)?;
-
-    // Zeroize the raw string data immediately after decoding
-    sk_data.zeroize();
+    let sk_data =
+        Zeroizing::new(fs::read_to_string(key).context("Failed to read signing key file")?);
+    let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
+    drop(sk_data); // zeroize raw key string immediately after decoding
 
     // Use explicit algorithm if provided, otherwise detect from key size
     let algo = if let Some(a) = explicit_algo {
@@ -895,9 +928,7 @@ fn cmd_sign(
         }
         _ => bail!("Algorithm {} does not support signing", algo),
     };
-
-    // Zeroize the decoded secret key bytes after signing
-    sk_bytes.zeroize();
+    drop(sk_bytes); // zeroize signing key bytes immediately after signing
 
     let sig_label = if algo.is_slh_dsa() {
         "SLH-DSA SIGNATURE"
