@@ -22,7 +22,7 @@ pub(crate) fn cmd_sign(
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
     drop(sk_data); // zeroize raw key string immediately after decoding
 
-    let out_format = format.unwrap_or(OutputFormat::Hex);
+    let out_format = format.unwrap_or(OutputFormat::DEFAULT);
 
     // Use explicit algorithm if provided, otherwise detect from key size
     let algo = if let Some(a) = explicit_algo {

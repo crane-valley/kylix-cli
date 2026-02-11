@@ -21,7 +21,7 @@ pub(crate) fn cmd_decaps(
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
     drop(sk_data); // zeroize raw key string immediately after decoding
 
-    let out_format = format.unwrap_or(OutputFormat::Hex);
+    let out_format = format.unwrap_or(OutputFormat::DEFAULT);
     let algo = Algorithm::detect_kem_from_sec_key(sk_bytes.len())?;
 
     if verbose {

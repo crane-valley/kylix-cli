@@ -454,3 +454,8 @@ pub(crate) enum OutputFormat {
     /// PEM format
     Pem,
 }
+
+impl OutputFormat {
+    /// Default format used for output when `--format` is not specified.
+    pub(crate) const DEFAULT: Self = Self::Hex;
+}

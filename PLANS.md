@@ -37,6 +37,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | wolfSSL Support | LOW | Add wolfSSL as external benchmark tool |
 | [M-4] Deep Zeroization in encode/decode | MEDIUM | Zeroize intermediate strings in `encode_output`/`decode_input` (PEM wrapping, base64) |
 | [L-5] Windows ACL for Secret Keys | LOW | Enforce restrictive ACLs on secret key files on Windows (e.g. `windows-acl` crate) |
+| [L-6] PEM Label Validation | LOW | Validate that BEGIN/END labels match in `decode_pem` (e.g. reject `BEGIN X / END Y`). Currently relies on downstream key-size validation as safety net |
 
 ---
 
