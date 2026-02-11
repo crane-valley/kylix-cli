@@ -41,7 +41,7 @@ pub(crate) fn cmd_keygen(
     let pk_size = pk_bytes.len();
     let sk_size = sk_bytes.len();
 
-    let out_format = format.unwrap_or(OutputFormat::DEFAULT);
+    let out_format = format.unwrap_or_default();
     let pk_encoded = encode_output(&pk_bytes, out_format, pk_label);
     let sk_encoded = Zeroizing::new(encode_output(&sk_bytes, out_format, sk_label));
     // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop

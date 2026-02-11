@@ -18,7 +18,7 @@ pub(crate) fn cmd_encaps(
     let pk_data = fs::read_to_string(pubkey).context("Failed to read public key file")?;
     let pk_bytes = decode_input(&pk_data, format)?;
 
-    let out_format = format.unwrap_or(OutputFormat::DEFAULT);
+    let out_format = format.unwrap_or_default();
 
     let algo = Algorithm::detect_kem_from_pub_key(pk_bytes.len())?;
 

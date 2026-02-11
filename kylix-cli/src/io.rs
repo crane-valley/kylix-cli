@@ -39,6 +39,15 @@ fn is_hex(s: &str) -> bool {
 
 /// Decode a PEM-encoded string to raw bytes.
 fn decode_pem(data: &str) -> Result<Vec<u8>> {
+    // Normalize CRLF to LF so that trailing \r doesn't corrupt header/footer
+    // checks or base64 body content
+    let normalized;
+    let data = if data.contains('\r') {
+        normalized = data.replace('\r', "");
+        &normalized
+    } else {
+        data
+    };
     let lines: Vec<&str> = data.lines().collect();
     if lines.len() < 3
         || !lines[0].starts_with("-----BEGIN")

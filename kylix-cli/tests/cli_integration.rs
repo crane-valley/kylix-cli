@@ -820,11 +820,12 @@ mod format_auto_detection {
 
         let pub_content = fs::read_to_string(tmp.path().join("key.pub")).unwrap();
         let trimmed = pub_content.trim();
-        // Hex output should contain only hex characters
+        // Hex output should be non-empty and contain only hex characters
+        assert!(!trimmed.is_empty(), "Public key output should not be empty");
         assert!(
             trimmed.chars().all(|c| c.is_ascii_hexdigit()),
             "Default output should be hex, got: {}...",
-            &trimmed[..trimmed.len().min(40)]
+            &trimmed[..trimmed.len().min(40).min(trimmed.floor_char_boundary(40))]
         );
     }
 }

@@ -445,17 +445,13 @@ impl Algorithm {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, ValueEnum)]
 pub(crate) enum OutputFormat {
     /// Hexadecimal encoding
+    #[default]
     Hex,
     /// Base64 encoding
     Base64,
     /// PEM format
     Pem,
-}
-
-impl OutputFormat {
-    /// Default format used for output when `--format` is not specified.
-    pub(crate) const DEFAULT: Self = Self::Hex;
 }
