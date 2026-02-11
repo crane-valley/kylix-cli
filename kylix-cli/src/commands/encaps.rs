@@ -29,7 +29,7 @@ pub(crate) fn cmd_encaps(
         Algorithm::MlKem512 => kem_encaps!(ml_kem::ml_kem_512, ml_kem::MlKem512, pk_bytes),
         Algorithm::MlKem768 => kem_encaps!(ml_kem::ml_kem_768, ml_kem::MlKem768, pk_bytes),
         Algorithm::MlKem1024 => kem_encaps!(ml_kem::ml_kem_1024, ml_kem::MlKem1024, pk_bytes),
-        // detect_kem_algorithm only returns ML-KEM variants, so DSA variants are unreachable
+        // detect_kem_from_pub_key only returns ML-KEM variants, so DSA variants are unreachable
         _ => unreachable!(),
     };
     let ss_bytes = Zeroizing::new(ss_bytes_raw);

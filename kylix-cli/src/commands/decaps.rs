@@ -53,7 +53,7 @@ pub(crate) fn cmd_decaps(
         Algorithm::MlKem1024 => {
             kem_decaps!(ml_kem::ml_kem_1024, ml_kem::MlKem1024, sk_bytes, ct_bytes)
         }
-        // detect_kem_algorithm only returns ML-KEM variants, so this is unreachable
+        // detect_kem_from_sec_key only returns ML-KEM variants, so this is unreachable
         _ => unreachable!(),
     };
     let ss_bytes = Zeroizing::new(ss_bytes_raw);
