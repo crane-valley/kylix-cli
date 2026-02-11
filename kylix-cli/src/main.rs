@@ -635,13 +635,13 @@ fn write_secret_file(path: &std::path::Path, content: &str) -> Result<()> {
             .open(&temp_path)
             .with_context(|| {
                 format!(
-                    "Failed to create temp file for secret key: {}",
+                    "Failed to create temp file for secret file: {}",
                     temp_path.display()
                 )
             })?;
         file.write_all(content.as_bytes()).with_context(|| {
             format!(
-                "Failed to write temp file for secret key: {}",
+                "Failed to write temp file for secret file: {}",
                 temp_path.display()
             )
         })?;
@@ -649,7 +649,7 @@ fn write_secret_file(path: &std::path::Path, content: &str) -> Result<()> {
         // Atomic rename to target path (works because same filesystem)
         fs::rename(&temp_path, path).with_context(|| {
             format!(
-                "Failed to rename temp file to secret key file: {}",
+                "Failed to rename temp file to secret file: {}",
                 path.display()
             )
         })?;
@@ -659,11 +659,11 @@ fn write_secret_file(path: &std::path::Path, content: &str) -> Result<()> {
     #[cfg(not(unix))]
     {
         eprintln!(
-            "Warning: file permissions cannot be restricted on this platform. Secret key file '{}' may be readable by other users.",
+            "Warning: file permissions cannot be restricted on this platform. Secret file '{}' may be readable by other users.",
             path.display()
         );
         fs::write(path, content)
-            .with_context(|| format!("Failed to write secret key file: {}", path.display()))?;
+            .with_context(|| format!("Failed to write secret file: {}", path.display()))?;
         Ok(())
     }
 }
@@ -705,7 +705,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
 
     fs::write(&pub_path, &pk_encoded).context("Failed to write public key")?;
     // Use restrictive permissions (0o600) for secret key on Unix
-    write_secret_file(std::path::Path::new(&sec_path), &sk_encoded)?;
+    write_secret_file(sec_path.as_ref(), &sk_encoded)?;
     drop(sk_encoded); // zeroize encoded secret key immediately after writing
 
     if verbose {

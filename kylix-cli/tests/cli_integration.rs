@@ -767,13 +767,23 @@ mod secret_file {
             .success();
 
         // Encaps with --secret-file only (ciphertext to stdout)
-        kylix()
+        let output = kylix()
             .args(["encaps", "--pub"])
             .arg(tmp.path().join("key.pub").to_str().unwrap())
             .arg("--secret-file")
             .arg(ss_path.to_str().unwrap())
             .assert()
             .success();
+
+        // Ciphertext should be on stdout
+        let stdout = String::from_utf8_lossy(&output.get_output().stdout);
+        assert!(!stdout.trim().is_empty(), "Ciphertext should be on stdout");
+        // Shared secret should NOT be leaked to stderr
+        let stderr = String::from_utf8_lossy(&output.get_output().stderr);
+        assert!(
+            !stderr.contains("Shared secret"),
+            "Shared secret should not appear on stderr"
+        );
 
         assert!(ss_path.exists(), "Secret file should exist");
     }
@@ -860,5 +870,35 @@ mod secret_file {
             ss_decaps.trim(),
             "Encaps and decaps shared secrets should match"
         );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_secret_file_permissions() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_path = tmp.path().join("ss");
+
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("-o")
+            .arg(ct_path.to_str().unwrap())
+            .arg("--secret-file")
+            .arg(ss_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        let mode = fs::metadata(&ss_path).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600, "Secret file should have 0o600 permissions");
     }
 }
