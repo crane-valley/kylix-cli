@@ -728,7 +728,7 @@ mod format_auto_detection {
         // Generate keys in base64
         kylix()
             .args(["keygen", "-a", "ml-kem-768", "-o"])
-            .arg(key_path.to_str().unwrap())
+            .arg(&key_path)
             .arg("-f")
             .arg("base64")
             .assert()
@@ -737,26 +737,26 @@ mod format_auto_detection {
         // Encaps with explicit base64 format
         kylix()
             .args(["encaps", "--pub"])
-            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg(tmp.path().join("key.pub"))
             .arg("-o")
-            .arg(ct_path.to_str().unwrap())
+            .arg(&ct_path)
             .arg("-f")
             .arg("base64")
             .arg("--secret-file")
-            .arg(ss_enc_path.to_str().unwrap())
+            .arg(&ss_enc_path)
             .assert()
             .success();
 
         // Decaps with explicit base64 format
         kylix()
             .args(["decaps", "--key"])
-            .arg(tmp.path().join("key.sec").to_str().unwrap())
+            .arg(tmp.path().join("key.sec"))
             .arg("-i")
-            .arg(ct_path.to_str().unwrap())
+            .arg(&ct_path)
             .arg("-f")
             .arg("base64")
             .arg("--secret-file")
-            .arg(ss_dec_path.to_str().unwrap())
+            .arg(&ss_dec_path)
             .assert()
             .success();
 
@@ -778,7 +778,7 @@ mod format_auto_detection {
         // Generate keys in PEM format
         kylix()
             .args(["keygen", "-a", "ml-kem-768", "-o"])
-            .arg(key_path.to_str().unwrap())
+            .arg(&key_path)
             .arg("-f")
             .arg("pem")
             .assert()
@@ -787,18 +787,18 @@ mod format_auto_detection {
         // Encaps without --format (auto-detect PEM -> succeeds)
         kylix()
             .args(["encaps", "--pub"])
-            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg(tmp.path().join("key.pub"))
             .arg("-o")
-            .arg(ct_path.to_str().unwrap())
+            .arg(&ct_path)
             .assert()
             .success();
 
         // Decaps with wrong explicit format (hex) should fail with helpful message
         kylix()
             .args(["decaps", "--key"])
-            .arg(tmp.path().join("key.sec").to_str().unwrap())
+            .arg(tmp.path().join("key.sec"))
             .arg("-i")
-            .arg(ct_path.to_str().unwrap())
+            .arg(&ct_path)
             .arg("-f")
             .arg("hex")
             .assert()
@@ -814,7 +814,7 @@ mod format_auto_detection {
         // Generate keys without --format (should default to hex)
         kylix()
             .args(["keygen", "-a", "ml-kem-768", "-o"])
-            .arg(key_path.to_str().unwrap())
+            .arg(&key_path)
             .assert()
             .success();
 

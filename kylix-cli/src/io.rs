@@ -40,7 +40,10 @@ fn is_hex(s: &str) -> bool {
 /// Decode a PEM-encoded string to raw bytes.
 fn decode_pem(data: &str) -> Result<Vec<u8>> {
     let lines: Vec<&str> = data.lines().collect();
-    if lines.len() < 3 || !data.starts_with("-----BEGIN") {
+    if lines.len() < 3
+        || !lines[0].starts_with("-----BEGIN")
+        || !lines.last().unwrap().starts_with("-----END")
+    {
         bail!("Invalid PEM format: expected -----BEGIN header, body lines, and -----END footer");
     }
     let b64: String = lines[1..lines.len() - 1].join("");
@@ -61,21 +64,21 @@ pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<V
         Some(OutputFormat::Pem) => decode_pem(data),
         Some(OutputFormat::Hex) => hex::decode(data).context(
             "Failed to decode as hex. If the input uses a different encoding, \
-             remove --format or use --format base64.",
+             remove --format or set it to the encoding used by the input: hex|base64|pem.",
         ),
         Some(OutputFormat::Base64) => BASE64.decode(data).context(
             "Failed to decode as base64. If the input uses a different encoding, \
-             remove --format or use --format hex.",
+             remove --format or set it to the encoding used by the input: hex|base64|pem.",
         ),
         None => {
             // Auto-detect: PEM -> hex -> base64
             if data.starts_with("-----BEGIN") {
-                return decode_pem(data);
+                decode_pem(data)
+            } else if is_hex(data) && data.len() % 2 == 0 {
+                hex::decode(data).context("Failed to decode hex")
+            } else {
+                BASE64.decode(data).context("Failed to decode base64")
             }
-            if is_hex(data) && data.len() % 2 == 0 {
-                return hex::decode(data).context("Failed to decode hex");
-            }
-            BASE64.decode(data).context("Failed to decode base64")
         }
     }
 }

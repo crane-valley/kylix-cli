@@ -114,7 +114,7 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         signature: PathBuf,
 
-        /// Encoding format (default: hex for output, auto-detect for input)
+        /// Input encoding (auto-detect if omitted)
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
 
