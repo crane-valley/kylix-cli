@@ -507,9 +507,9 @@ dependencies = [
 
 [[package]]
 name = "kylix-core"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51f86531f2121941a5ea5be7d92cae88400aeb7917faa2835e09110cf2f69218"
+checksum = "70db0d100cfc137b373a8a061c0620fbbe8b194b4894caca859624bda463f2a0"
 dependencies = [
  "rand_core",
  "subtle",
@@ -519,9 +519,9 @@ dependencies = [
 
 [[package]]
 name = "kylix-ml-dsa"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa233ef31b41affe712dec22308e0d06c986abbed599a23eb577288987c3ae95"
+checksum = "1cfa76e7152fb4e87a9edfe6f6e8d7d10016c940956d31d757b606bcc6137334"
 dependencies = [
  "kylix-core",
  "rand_core",
@@ -532,9 +532,9 @@ dependencies = [
 
 [[package]]
 name = "kylix-ml-kem"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3660712d3f8921ef4b81f43981a5f96adcbccfcd64d8b92c3d1f563cd362849"
+checksum = "0a7ed49d60d0a2bac2f25b36999d0cdd4d312207d9367cd3c3c2534ae0c273e1"
 dependencies = [
  "kylix-core",
  "rand_core",
@@ -545,9 +545,9 @@ dependencies = [
 
 [[package]]
 name = "kylix-pqc"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "758ae216c3bb4e4d8342f008c5e77ae85f8e55f0d6fea94e60a721a1415271f2"
+checksum = "c8252a3060ec26231fe768b9eed4982edda6cf117fa2d28b1bb5085c84f03655"
 dependencies = [
  "kylix-core",
  "kylix-ml-dsa",
@@ -557,9 +557,9 @@ dependencies = [
 
 [[package]]
 name = "kylix-slh-dsa"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76c3fcce624aaa9293daf716a6d8d698ebaf5dd0ccf06fcafd268756d0943f6e"
+checksum = "4b2d52adf513683150b0bd8c54f4df68ae21b4a1f568e0e1997488f0bd2bd21e"
 dependencies = [
  "kylix-core",
  "rand_core",
