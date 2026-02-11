@@ -603,22 +603,19 @@ fn decode_input(data: &str, _format: OutputFormat) -> Result<Vec<u8>> {
 /// Returns an error if the file cannot be created or written. On Unix systems,
 /// this includes failures when setting file permissions; on non-Unix systems,
 /// this includes any error returned by [`fs::write`].
-fn write_secret_file(path: &str, content: &str) -> Result<()> {
+fn write_secret_file(path: &std::path::Path, content: &str) -> Result<()> {
     #[cfg(unix)]
     {
-        use std::path::Path;
-
-        let target = Path::new(path);
-        let parent = target.parent().ok_or_else(|| {
+        let parent = path.parent().ok_or_else(|| {
             anyhow!(
                 "Cannot determine parent directory for secret file path: {}",
-                path
+                path.display()
             )
         })?;
 
-        let filename = target
+        let filename = path
             .file_name()
-            .ok_or_else(|| anyhow!("Path does not contain a valid filename: {}", path))?;
+            .ok_or_else(|| anyhow!("Path does not contain a valid filename: {}", path.display()))?;
 
         // Use random suffix to prevent attackers from pre-creating predictable temp files
         let random_suffix: u64 = rand::random();
@@ -650,8 +647,12 @@ fn write_secret_file(path: &str, content: &str) -> Result<()> {
         })?;
 
         // Atomic rename to target path (works because same filesystem)
-        fs::rename(&temp_path, path)
-            .with_context(|| format!("Failed to rename temp file to secret key file: {}", path))?;
+        fs::rename(&temp_path, path).with_context(|| {
+            format!(
+                "Failed to rename temp file to secret key file: {}",
+                path.display()
+            )
+        })?;
 
         Ok(())
     }
@@ -659,10 +660,10 @@ fn write_secret_file(path: &str, content: &str) -> Result<()> {
     {
         eprintln!(
             "Warning: file permissions cannot be restricted on this platform. Secret key file '{}' may be readable by other users.",
-            path
+            path.display()
         );
         fs::write(path, content)
-            .with_context(|| format!("Failed to write secret key file: {}", path))?;
+            .with_context(|| format!("Failed to write secret key file: {}", path.display()))?;
         Ok(())
     }
 }
@@ -704,7 +705,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
 
     fs::write(&pub_path, &pk_encoded).context("Failed to write public key")?;
     // Use restrictive permissions (0o600) for secret key on Unix
-    write_secret_file(&sec_path, &sk_encoded)?;
+    write_secret_file(std::path::Path::new(&sec_path), &sk_encoded)?;
     drop(sk_encoded); // zeroize encoded secret key immediately after writing
 
     if verbose {
@@ -761,12 +762,7 @@ fn cmd_encaps(
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
     if let Some(sf_path) = secret_file {
-        write_secret_file(
-            sf_path
-                .to_str()
-                .ok_or_else(|| anyhow!("Invalid secret file path"))?,
-            &ss_encoded,
-        )?;
+        write_secret_file(sf_path, &ss_encoded)?;
         if verbose {
             eprintln!("Shared secret written to: {}", sf_path.display());
         }
@@ -839,12 +835,7 @@ fn cmd_decaps(
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
     if let Some(sf_path) = secret_file {
-        write_secret_file(
-            sf_path
-                .to_str()
-                .ok_or_else(|| anyhow!("Invalid secret file path"))?,
-            &ss_encoded,
-        )?;
+        write_secret_file(sf_path, &ss_encoded)?;
         if verbose {
             eprintln!("Shared secret written to: {}", sf_path.display());
         }
