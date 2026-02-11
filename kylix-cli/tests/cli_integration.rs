@@ -717,3 +717,148 @@ mod format_auto_detection {
             .success();
     }
 }
+
+mod secret_file {
+    use super::*;
+
+    #[test]
+    fn test_encaps_secret_file() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_path = tmp.path().join("ss");
+
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        // Encaps with both -o and --secret-file
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("-o")
+            .arg(ct_path.to_str().unwrap())
+            .arg("--secret-file")
+            .arg(ss_path.to_str().unwrap())
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Shared secret").not());
+
+        assert!(ss_path.exists(), "Secret file should exist");
+        let ss_content = fs::read_to_string(&ss_path).unwrap();
+        assert!(
+            !ss_content.trim().is_empty(),
+            "Secret file should not be empty"
+        );
+    }
+
+    #[test]
+    fn test_encaps_secret_file_without_output() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ss_path = tmp.path().join("ss");
+
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        // Encaps with --secret-file only (ciphertext to stdout)
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("--secret-file")
+            .arg(ss_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        assert!(ss_path.exists(), "Secret file should exist");
+    }
+
+    #[test]
+    fn test_decaps_secret_file() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_path = tmp.path().join("ss");
+
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("-o")
+            .arg(ct_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        // Decaps with --secret-file
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec").to_str().unwrap())
+            .arg("-i")
+            .arg(ct_path.to_str().unwrap())
+            .arg("--secret-file")
+            .arg(ss_path.to_str().unwrap())
+            .assert()
+            .success()
+            .stdout(predicate::str::is_empty());
+
+        assert!(ss_path.exists(), "Secret file should exist");
+        let ss_content = fs::read_to_string(&ss_path).unwrap();
+        assert!(
+            !ss_content.trim().is_empty(),
+            "Secret file should not be empty"
+        );
+    }
+
+    #[test]
+    fn test_secret_file_roundtrip() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_encaps_path = tmp.path().join("ss_encaps");
+        let ss_decaps_path = tmp.path().join("ss_decaps");
+
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("-o")
+            .arg(ct_path.to_str().unwrap())
+            .arg("--secret-file")
+            .arg(ss_encaps_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec").to_str().unwrap())
+            .arg("-i")
+            .arg(ct_path.to_str().unwrap())
+            .arg("--secret-file")
+            .arg(ss_decaps_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        let ss_encaps = fs::read_to_string(&ss_encaps_path).unwrap();
+        let ss_decaps = fs::read_to_string(&ss_decaps_path).unwrap();
+        assert_eq!(
+            ss_encaps.trim(),
+            ss_decaps.trim(),
+            "Encaps and decaps shared secrets should match"
+        );
+    }
+}

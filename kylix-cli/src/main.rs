@@ -129,6 +129,10 @@ enum Commands {
         #[arg(short, long)]
         output: Option<PathBuf>,
 
+        /// Write shared secret to file instead of printing to console
+        #[arg(long = "secret-file")]
+        secret_file: Option<PathBuf>,
+
         /// Output format
         #[arg(short, long, value_enum, default_value = "hex")]
         format: OutputFormat,
@@ -143,6 +147,10 @@ enum Commands {
         /// Path to the ciphertext file (reads from stdin if not specified)
         #[arg(short, long)]
         input: Option<PathBuf>,
+
+        /// Write shared secret to file instead of printing to console
+        #[arg(long = "secret-file")]
+        secret_file: Option<PathBuf>,
 
         /// Output format for shared secret
         #[arg(short, long, value_enum, default_value = "hex")]
@@ -714,6 +722,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
 fn cmd_encaps(
     pubkey: &PathBuf,
     output: Option<&PathBuf>,
+    secret_file: Option<&PathBuf>,
     format: OutputFormat,
     verbose: bool,
 ) -> Result<()> {
@@ -748,11 +757,20 @@ fn cmd_encaps(
         println!("{}", ct_encoded);
     }
 
-    // Always output shared secret to stdout (or stderr if ciphertext goes to stdout)
     let ss_len = ss_bytes.len();
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
-    if output.is_some() {
+    if let Some(sf_path) = secret_file {
+        write_secret_file(
+            sf_path
+                .to_str()
+                .ok_or_else(|| anyhow!("Invalid secret file path"))?,
+            &ss_encoded,
+        )?;
+        if verbose {
+            eprintln!("Shared secret written to: {}", sf_path.display());
+        }
+    } else if output.is_some() {
         println!("Shared secret: {}", &*ss_encoded);
     } else {
         eprintln!("Shared secret: {}", &*ss_encoded);
@@ -770,6 +788,7 @@ fn cmd_encaps(
 fn cmd_decaps(
     key: &PathBuf,
     input: Option<&PathBuf>,
+    secret_file: Option<&PathBuf>,
     format: OutputFormat,
     verbose: bool,
 ) -> Result<()> {
@@ -819,7 +838,19 @@ fn cmd_decaps(
     let ss_len = ss_bytes.len();
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
-    println!("{}", &*ss_encoded);
+    if let Some(sf_path) = secret_file {
+        write_secret_file(
+            sf_path
+                .to_str()
+                .ok_or_else(|| anyhow!("Invalid secret file path"))?,
+            &ss_encoded,
+        )?;
+        if verbose {
+            eprintln!("Shared secret written to: {}", sf_path.display());
+        }
+    } else {
+        println!("{}", &*ss_encoded);
+    }
     drop(ss_encoded); // zeroize encoded shared secret immediately after output
 
     if verbose {
@@ -1163,12 +1194,28 @@ fn main() -> Result<()> {
         Commands::Encaps {
             pubkey,
             output,
+            secret_file,
             format,
-        } => cmd_encaps(&pubkey, output.as_ref(), format, cli.verbose),
+        } => cmd_encaps(
+            &pubkey,
+            output.as_ref(),
+            secret_file.as_ref(),
+            format,
+            cli.verbose,
+        ),
 
-        Commands::Decaps { key, input, format } => {
-            cmd_decaps(&key, input.as_ref(), format, cli.verbose)
-        }
+        Commands::Decaps {
+            key,
+            input,
+            secret_file,
+            format,
+        } => cmd_decaps(
+            &key,
+            input.as_ref(),
+            secret_file.as_ref(),
+            format,
+            cli.verbose,
+        ),
 
         Commands::Sign {
             key,
