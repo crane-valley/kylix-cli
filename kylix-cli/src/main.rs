@@ -129,6 +129,10 @@ enum Commands {
         #[arg(short, long)]
         output: Option<PathBuf>,
 
+        /// Write shared secret to file instead of printing to console
+        #[arg(long = "secret-file")]
+        secret_file: Option<PathBuf>,
+
         /// Output format
         #[arg(short, long, value_enum, default_value = "hex")]
         format: OutputFormat,
@@ -143,6 +147,10 @@ enum Commands {
         /// Path to the ciphertext file (reads from stdin if not specified)
         #[arg(short, long)]
         input: Option<PathBuf>,
+
+        /// Write shared secret to file instead of printing to console
+        #[arg(long = "secret-file")]
+        secret_file: Option<PathBuf>,
 
         /// Output format for shared secret
         #[arg(short, long, value_enum, default_value = "hex")]
@@ -595,22 +603,19 @@ fn decode_input(data: &str, _format: OutputFormat) -> Result<Vec<u8>> {
 /// Returns an error if the file cannot be created or written. On Unix systems,
 /// this includes failures when setting file permissions; on non-Unix systems,
 /// this includes any error returned by [`fs::write`].
-fn write_secret_file(path: &str, content: &str) -> Result<()> {
+fn write_secret_file(path: &std::path::Path, content: &str) -> Result<()> {
     #[cfg(unix)]
     {
-        use std::path::Path;
-
-        let target = Path::new(path);
-        let parent = target.parent().ok_or_else(|| {
+        let parent = path.parent().ok_or_else(|| {
             anyhow!(
                 "Cannot determine parent directory for secret file path: {}",
-                path
+                path.display()
             )
         })?;
 
-        let filename = target
+        let filename = path
             .file_name()
-            .ok_or_else(|| anyhow!("Path does not contain a valid filename: {}", path))?;
+            .ok_or_else(|| anyhow!("Path does not contain a valid filename: {}", path.display()))?;
 
         // Use random suffix to prevent attackers from pre-creating predictable temp files
         let random_suffix: u64 = rand::random();
@@ -630,31 +635,35 @@ fn write_secret_file(path: &str, content: &str) -> Result<()> {
             .open(&temp_path)
             .with_context(|| {
                 format!(
-                    "Failed to create temp file for secret key: {}",
+                    "Failed to create temp file for secret file: {}",
                     temp_path.display()
                 )
             })?;
         file.write_all(content.as_bytes()).with_context(|| {
             format!(
-                "Failed to write temp file for secret key: {}",
+                "Failed to write temp file for secret file: {}",
                 temp_path.display()
             )
         })?;
 
         // Atomic rename to target path (works because same filesystem)
-        fs::rename(&temp_path, path)
-            .with_context(|| format!("Failed to rename temp file to secret key file: {}", path))?;
+        fs::rename(&temp_path, path).with_context(|| {
+            format!(
+                "Failed to rename temp file to secret file: {}",
+                path.display()
+            )
+        })?;
 
         Ok(())
     }
     #[cfg(not(unix))]
     {
         eprintln!(
-            "Warning: file permissions cannot be restricted on this platform. Secret key file '{}' may be readable by other users.",
-            path
+            "Warning: file permissions cannot be restricted on this platform. Secret file '{}' may be readable by other users.",
+            path.display()
         );
         fs::write(path, content)
-            .with_context(|| format!("Failed to write secret key file: {}", path))?;
+            .with_context(|| format!("Failed to write secret file: {}", path.display()))?;
         Ok(())
     }
 }
@@ -696,7 +705,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
 
     fs::write(&pub_path, &pk_encoded).context("Failed to write public key")?;
     // Use restrictive permissions (0o600) for secret key on Unix
-    write_secret_file(&sec_path, &sk_encoded)?;
+    write_secret_file(sec_path.as_ref(), &sk_encoded)?;
     drop(sk_encoded); // zeroize encoded secret key immediately after writing
 
     if verbose {
@@ -714,6 +723,7 @@ fn cmd_keygen(algo: Algorithm, output: &str, format: OutputFormat, verbose: bool
 fn cmd_encaps(
     pubkey: &PathBuf,
     output: Option<&PathBuf>,
+    secret_file: Option<&PathBuf>,
     format: OutputFormat,
     verbose: bool,
 ) -> Result<()> {
@@ -748,11 +758,15 @@ fn cmd_encaps(
         println!("{}", ct_encoded);
     }
 
-    // Always output shared secret to stdout (or stderr if ciphertext goes to stdout)
     let ss_len = ss_bytes.len();
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
-    if output.is_some() {
+    if let Some(sf_path) = secret_file {
+        write_secret_file(sf_path, &ss_encoded)?;
+        if verbose {
+            eprintln!("Shared secret written to: {}", sf_path.display());
+        }
+    } else if output.is_some() {
         println!("Shared secret: {}", &*ss_encoded);
     } else {
         eprintln!("Shared secret: {}", &*ss_encoded);
@@ -770,6 +784,7 @@ fn cmd_encaps(
 fn cmd_decaps(
     key: &PathBuf,
     input: Option<&PathBuf>,
+    secret_file: Option<&PathBuf>,
     format: OutputFormat,
     verbose: bool,
 ) -> Result<()> {
@@ -819,7 +834,14 @@ fn cmd_decaps(
     let ss_len = ss_bytes.len();
     let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
-    println!("{}", &*ss_encoded);
+    if let Some(sf_path) = secret_file {
+        write_secret_file(sf_path, &ss_encoded)?;
+        if verbose {
+            eprintln!("Shared secret written to: {}", sf_path.display());
+        }
+    } else {
+        println!("{}", &*ss_encoded);
+    }
     drop(ss_encoded); // zeroize encoded shared secret immediately after output
 
     if verbose {
@@ -1163,12 +1185,28 @@ fn main() -> Result<()> {
         Commands::Encaps {
             pubkey,
             output,
+            secret_file,
             format,
-        } => cmd_encaps(&pubkey, output.as_ref(), format, cli.verbose),
+        } => cmd_encaps(
+            &pubkey,
+            output.as_ref(),
+            secret_file.as_ref(),
+            format,
+            cli.verbose,
+        ),
 
-        Commands::Decaps { key, input, format } => {
-            cmd_decaps(&key, input.as_ref(), format, cli.verbose)
-        }
+        Commands::Decaps {
+            key,
+            input,
+            secret_file,
+            format,
+        } => cmd_decaps(
+            &key,
+            input.as_ref(),
+            secret_file.as_ref(),
+            format,
+            cli.verbose,
+        ),
 
         Commands::Sign {
             key,

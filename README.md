@@ -65,6 +65,10 @@ kylix encaps --pub mykey.pub -o ciphertext.ct
 
 # Decapsulate (recovers shared secret from ciphertext)
 kylix decaps --key mykey.sec -i ciphertext.ct
+
+# Write shared secret to file instead of console
+kylix encaps --pub mykey.pub -o ciphertext.ct --secret-file shared.secret
+kylix decaps --key mykey.sec -i ciphertext.ct --secret-file shared.secret
 ```
 
 ### Sign/Verify (ML-DSA, SLH-DSA)
