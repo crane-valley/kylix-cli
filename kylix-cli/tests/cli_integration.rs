@@ -825,7 +825,7 @@ mod format_auto_detection {
         assert!(
             trimmed.chars().all(|c| c.is_ascii_hexdigit()),
             "Default output should be hex, got: {}...",
-            &trimmed[..trimmed.len().min(40).min(trimmed.floor_char_boundary(40))]
+            trimmed.get(..40).unwrap_or(trimmed)
         );
     }
 }

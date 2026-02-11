@@ -72,12 +72,10 @@ pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<V
     match format {
         Some(OutputFormat::Pem) => decode_pem(data),
         Some(OutputFormat::Hex) => hex::decode(data).context(
-            "Failed to decode as hex. If the input uses a different encoding, \
-             remove --format or set it to the encoding used by the input: hex|base64|pem.",
+            "Failed to decode as hex. If the input uses a different encoding, remove --format or set it to the encoding used by the input: hex|base64|pem.",
         ),
         Some(OutputFormat::Base64) => BASE64.decode(data).context(
-            "Failed to decode as base64. If the input uses a different encoding, \
-             remove --format or set it to the encoding used by the input: hex|base64|pem.",
+            "Failed to decode as base64. If the input uses a different encoding, remove --format or set it to the encoding used by the input: hex|base64|pem.",
         ),
         None => {
             // Auto-detect: PEM -> hex -> base64
