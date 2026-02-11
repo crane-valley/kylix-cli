@@ -17,7 +17,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::time::{Duration, Instant};
 
-use crate::Algorithm;
+use crate::cli::Algorithm;
 
 // liboqs benchmark duration estimation constants
 //
