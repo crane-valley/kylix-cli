@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use kylix_pqc::ml_kem::{self, Kem};
 use std::fs;
 use std::io::{self, Read};

@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{bail, Context, Result};
 use kylix_pqc::ml_dsa::{self, Signer};
 use kylix_pqc::slh_dsa;
 use std::fs;

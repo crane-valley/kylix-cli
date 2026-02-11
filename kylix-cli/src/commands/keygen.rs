@@ -1,8 +1,7 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use kylix_pqc::ml_dsa::{self, Signer};
 use kylix_pqc::ml_kem::{self, Kem};
 use kylix_pqc::slh_dsa;
-use rand::rng;
 use std::fs;
 use zeroize::Zeroizing;
 

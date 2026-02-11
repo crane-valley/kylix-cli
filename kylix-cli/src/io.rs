@@ -1,5 +1,3 @@
-#[cfg(unix)]
-use anyhow::anyhow;
 use anyhow::{bail, Context, Result};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use std::fs;
@@ -85,15 +83,15 @@ pub(crate) fn write_secret_file(path: &Path, content: &str) -> Result<()> {
     #[cfg(unix)]
     {
         let parent = path.parent().ok_or_else(|| {
-            anyhow!(
+            anyhow::anyhow!(
                 "Cannot determine parent directory for secret file path: {}",
                 path.display()
             )
         })?;
 
-        let filename = path
-            .file_name()
-            .ok_or_else(|| anyhow!("Path does not contain a valid filename: {}", path.display()))?;
+        let filename = path.file_name().ok_or_else(|| {
+            anyhow::anyhow!("Path does not contain a valid filename: {}", path.display())
+        })?;
 
         // Use random suffix to prevent attackers from pre-creating predictable temp files
         let random_suffix: u64 = rand::random();
@@ -123,9 +121,21 @@ pub(crate) fn write_secret_file(path: &Path, content: &str) -> Result<()> {
                 temp_path.display()
             )
         })?;
+        // Flush to disk before rename to avoid partial writes on crash
+        file.sync_all().with_context(|| {
+            format!(
+                "Failed to sync temp file for secret file: {}",
+                temp_path.display()
+            )
+        })?;
 
         // Atomic rename to target path (works because same filesystem)
-        fs::rename(&temp_path, path).with_context(|| {
+        // Clean up temp file on failure to avoid leaving secret material on disk
+        let rename_result = fs::rename(&temp_path, path);
+        if rename_result.is_err() {
+            let _ = fs::remove_file(&temp_path);
+        }
+        rename_result.with_context(|| {
             format!(
                 "Failed to rename temp file to secret file: {}",
                 path.display()
