@@ -13,7 +13,7 @@ pub(crate) fn cmd_decaps(
     key: &PathBuf,
     input: Option<&PathBuf>,
     secret_file: Option<&PathBuf>,
-    format: OutputFormat,
+    format: Option<OutputFormat>,
     verbose: bool,
 ) -> Result<()> {
     let sk_data =
@@ -21,6 +21,7 @@ pub(crate) fn cmd_decaps(
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
     drop(sk_data); // zeroize raw key string immediately after decoding
 
+    let out_format = format.unwrap_or(OutputFormat::Hex);
     let algo = Algorithm::detect_kem_from_sec_key(sk_bytes.len())?;
 
     if verbose {
@@ -60,7 +61,7 @@ pub(crate) fn cmd_decaps(
     drop(sk_bytes); // zeroize secret key bytes immediately after decapsulation
 
     let ss_len = ss_bytes.len();
-    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
+    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, out_format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
     if let Some(sf_path) = secret_file {
         write_secret_file(sf_path, &ss_encoded)?;

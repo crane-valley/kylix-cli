@@ -37,33 +37,47 @@ fn is_hex(s: &str) -> bool {
     !s.is_empty() && s.chars().all(|c| c.is_ascii_hexdigit())
 }
 
-/// Decode bytes with auto-detection of format.
-/// Detection order: PEM (by header) -> Hex (if all hex chars) -> Base64.
-/// The format parameter is ignored for input; it only affects output encoding.
-pub(crate) fn decode_input(data: &str, _format: OutputFormat) -> Result<Vec<u8>> {
+/// Decode a PEM-encoded string to raw bytes.
+fn decode_pem(data: &str) -> Result<Vec<u8>> {
+    let lines: Vec<&str> = data.lines().collect();
+    if lines.len() < 3 || !data.starts_with("-----BEGIN") {
+        bail!("Invalid PEM format: expected -----BEGIN header, body lines, and -----END footer");
+    }
+    let b64: String = lines[1..lines.len() - 1].join("");
+    BASE64
+        .decode(&b64)
+        .context("Failed to decode PEM base64 content")
+}
+
+/// Decode bytes from the given encoding format.
+///
+/// When `format` is `Some(...)`, the specified format is used directly.
+/// When `format` is `None`, auto-detection is applied:
+/// PEM (by header) -> Hex (all hex chars + even length) -> Base64.
+pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<Vec<u8>> {
     let data = data.trim();
 
-    // Auto-detect PEM format
-    if data.starts_with("-----BEGIN") {
-        let lines: Vec<&str> = data.lines().collect();
-        if lines.len() < 3 {
-            bail!("Invalid PEM format");
+    match format {
+        Some(OutputFormat::Pem) => decode_pem(data),
+        Some(OutputFormat::Hex) => hex::decode(data).context(
+            "Failed to decode as hex. If the input uses a different encoding, \
+             remove --format or use --format base64.",
+        ),
+        Some(OutputFormat::Base64) => BASE64.decode(data).context(
+            "Failed to decode as base64. If the input uses a different encoding, \
+             remove --format or use --format hex.",
+        ),
+        None => {
+            // Auto-detect: PEM -> hex -> base64
+            if data.starts_with("-----BEGIN") {
+                return decode_pem(data);
+            }
+            if is_hex(data) && data.len() % 2 == 0 {
+                return hex::decode(data).context("Failed to decode hex");
+            }
+            BASE64.decode(data).context("Failed to decode base64")
         }
-        let b64: String = lines[1..lines.len() - 1].join("");
-        return BASE64
-            .decode(&b64)
-            .context("Failed to decode PEM base64 content");
     }
-
-    // Auto-detect hex vs base64
-    // Hex: only 0-9, a-f, A-F (and must have even length for valid bytes)
-    // Base64: may contain +, /, = which are not valid hex
-    if is_hex(data) && data.len() % 2 == 0 {
-        return hex::decode(data).context("Failed to decode hex");
-    }
-
-    // Try base64
-    BASE64.decode(data).context("Failed to decode base64")
 }
 
 /// Write a file with restricted permissions (0o600) on Unix systems.
@@ -153,5 +167,129 @@ pub(crate) fn write_secret_file(path: &Path, content: &str) -> Result<()> {
         fs::write(path, content)
             .with_context(|| format!("Failed to write secret file: {}", path.display()))?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const SAMPLE_BYTES: &[u8] = &[0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x23];
+    const SAMPLE_HEX: &str = "deadbeef0123";
+    // base64 of [0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x23] = "3q2+7wEj"
+    const SAMPLE_BASE64: &str = "3q2+7wEj";
+
+    fn sample_pem() -> String {
+        format!(
+            "-----BEGIN TEST KEY-----\n{}\n-----END TEST KEY-----",
+            SAMPLE_BASE64
+        )
+    }
+
+    // --- Explicit format decoding ---
+
+    #[test]
+    fn decode_explicit_hex() {
+        let result = decode_input(SAMPLE_HEX, Some(OutputFormat::Hex)).unwrap();
+        assert_eq!(result, SAMPLE_BYTES);
+    }
+
+    #[test]
+    fn decode_explicit_base64() {
+        let result = decode_input(SAMPLE_BASE64, Some(OutputFormat::Base64)).unwrap();
+        assert_eq!(result, SAMPLE_BYTES);
+    }
+
+    #[test]
+    fn decode_explicit_pem() {
+        let pem = sample_pem();
+        let result = decode_input(&pem, Some(OutputFormat::Pem)).unwrap();
+        assert_eq!(result, SAMPLE_BYTES);
+    }
+
+    // --- Explicit format prevents fallback ---
+
+    #[test]
+    fn decode_explicit_hex_rejects_base64() {
+        // "3q2+7wEj" is valid base64, but should fail when hex is explicitly requested
+        let err = decode_input(SAMPLE_BASE64, Some(OutputFormat::Hex)).unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("hex"), "Error should mention hex: {}", msg);
+    }
+
+    #[test]
+    fn decode_explicit_base64_rejects_invalid() {
+        // "deadbeef0123" is valid hex but also valid base64 (decodes to different bytes).
+        // Use a string that is NOT valid base64 to test rejection.
+        let err = decode_input("not-valid-base64!!!", Some(OutputFormat::Base64)).unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("base64"),
+            "Error should mention base64: {}",
+            msg
+        );
+    }
+
+    // --- Hex-looking data decoded as base64 when explicitly requested ---
+
+    #[test]
+    fn decode_hex_looking_data_as_explicit_base64() {
+        // "deadbeef0123" happens to be decodable as base64 (it's all valid base64 chars)
+        // When base64 is explicitly requested, it should decode as base64, not hex
+        let as_base64 = decode_input(SAMPLE_HEX, Some(OutputFormat::Base64)).unwrap();
+        let as_hex = decode_input(SAMPLE_HEX, Some(OutputFormat::Hex)).unwrap();
+        // The decoded bytes should differ (different encodings of same string)
+        assert_ne!(as_base64, as_hex);
+    }
+
+    // --- Auto-detection (None) ---
+
+    #[test]
+    fn decode_auto_detect_pem() {
+        let pem = sample_pem();
+        let result = decode_input(&pem, None).unwrap();
+        assert_eq!(result, SAMPLE_BYTES);
+    }
+
+    #[test]
+    fn decode_auto_detect_hex() {
+        let result = decode_input(SAMPLE_HEX, None).unwrap();
+        assert_eq!(result, SAMPLE_BYTES);
+    }
+
+    #[test]
+    fn decode_auto_detect_base64() {
+        // Use a base64 string that is NOT valid hex to ensure base64 fallback
+        let data = &[0xFF, 0x00, 0xAB];
+        let b64 = BASE64.encode(data);
+        let result = decode_input(&b64, None).unwrap();
+        assert_eq!(result, data);
+    }
+
+    // --- encode_output ---
+
+    #[test]
+    fn encode_hex_roundtrip() {
+        let encoded = encode_output(SAMPLE_BYTES, OutputFormat::Hex, "UNUSED");
+        assert_eq!(encoded, SAMPLE_HEX);
+        let decoded = decode_input(&encoded, Some(OutputFormat::Hex)).unwrap();
+        assert_eq!(decoded, SAMPLE_BYTES);
+    }
+
+    #[test]
+    fn encode_base64_roundtrip() {
+        let encoded = encode_output(SAMPLE_BYTES, OutputFormat::Base64, "UNUSED");
+        assert_eq!(encoded, SAMPLE_BASE64);
+        let decoded = decode_input(&encoded, Some(OutputFormat::Base64)).unwrap();
+        assert_eq!(decoded, SAMPLE_BYTES);
+    }
+
+    #[test]
+    fn encode_pem_roundtrip() {
+        let encoded = encode_output(SAMPLE_BYTES, OutputFormat::Pem, "TEST KEY");
+        assert!(encoded.starts_with("-----BEGIN TEST KEY-----"));
+        assert!(encoded.ends_with("-----END TEST KEY-----"));
+        let decoded = decode_input(&encoded, Some(OutputFormat::Pem)).unwrap();
+        assert_eq!(decoded, SAMPLE_BYTES);
     }
 }

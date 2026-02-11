@@ -34,9 +34,9 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: String,
 
-        /// Output format
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format (default: hex for output, auto-detect for input)
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
     },
 
     /// Encapsulate a shared secret using a public key
@@ -53,9 +53,9 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Output format
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format (default: hex for output, auto-detect for input)
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
     },
 
     /// Decapsulate a shared secret using a secret key
@@ -72,9 +72,9 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Output format for shared secret
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format (default: hex for output, auto-detect for input)
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
     },
 
     /// Sign a file using ML-DSA or SLH-DSA
@@ -91,9 +91,9 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: PathBuf,
 
-        /// Output format
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format (default: hex for output, auto-detect for input)
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
 
         /// Algorithm (required for SLH-DSA to distinguish -s/-f variants)
         #[arg(long, value_enum)]
@@ -114,9 +114,9 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         signature: PathBuf,
 
-        /// Input format for key and signature files
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format (default: hex for output, auto-detect for input)
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
 
         /// Algorithm (required for SLH-DSA to distinguish -s/-f variants)
         #[arg(long, value_enum)]

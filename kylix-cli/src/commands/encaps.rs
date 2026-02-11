@@ -12,11 +12,13 @@ pub(crate) fn cmd_encaps(
     pubkey: &PathBuf,
     output: Option<&PathBuf>,
     secret_file: Option<&PathBuf>,
-    format: OutputFormat,
+    format: Option<OutputFormat>,
     verbose: bool,
 ) -> Result<()> {
     let pk_data = fs::read_to_string(pubkey).context("Failed to read public key file")?;
     let pk_bytes = decode_input(&pk_data, format)?;
+
+    let out_format = format.unwrap_or(OutputFormat::Hex);
 
     let algo = Algorithm::detect_kem_from_pub_key(pk_bytes.len())?;
 
@@ -34,7 +36,7 @@ pub(crate) fn cmd_encaps(
     };
     let ss_bytes = Zeroizing::new(ss_bytes_raw);
 
-    let ct_encoded = encode_output(&ct_bytes, format, "ML-KEM CIPHERTEXT");
+    let ct_encoded = encode_output(&ct_bytes, out_format, "ML-KEM CIPHERTEXT");
 
     if let Some(out_path) = output {
         fs::write(out_path, &ct_encoded).context("Failed to write ciphertext")?;
@@ -47,7 +49,7 @@ pub(crate) fn cmd_encaps(
     }
 
     let ss_len = ss_bytes.len();
-    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, format, "SHARED SECRET"));
+    let ss_encoded = Zeroizing::new(encode_output(&ss_bytes, out_format, "SHARED SECRET"));
     drop(ss_bytes); // zeroize shared secret bytes immediately after encoding
     if let Some(sf_path) = secret_file {
         write_secret_file(sf_path, &ss_encoded)?;

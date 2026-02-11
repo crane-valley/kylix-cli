@@ -716,6 +716,117 @@ mod format_auto_detection {
             .assert()
             .success();
     }
+
+    #[test]
+    fn test_explicit_base64_roundtrip() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_enc_path = tmp.path().join("ss_enc");
+        let ss_dec_path = tmp.path().join("ss_dec");
+
+        // Generate keys in base64
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .arg("-f")
+            .arg("base64")
+            .assert()
+            .success();
+
+        // Encaps with explicit base64 format
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("-o")
+            .arg(ct_path.to_str().unwrap())
+            .arg("-f")
+            .arg("base64")
+            .arg("--secret-file")
+            .arg(ss_enc_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        // Decaps with explicit base64 format
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec").to_str().unwrap())
+            .arg("-i")
+            .arg(ct_path.to_str().unwrap())
+            .arg("-f")
+            .arg("base64")
+            .arg("--secret-file")
+            .arg(ss_dec_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        let ss_enc = fs::read_to_string(&ss_enc_path).unwrap();
+        let ss_dec = fs::read_to_string(&ss_dec_path).unwrap();
+        assert_eq!(
+            ss_enc.trim(),
+            ss_dec.trim(),
+            "Shared secrets should match with explicit base64 format"
+        );
+    }
+
+    #[test]
+    fn test_format_mismatch_error() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+
+        // Generate keys in PEM format
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .arg("-f")
+            .arg("pem")
+            .assert()
+            .success();
+
+        // Encaps without --format (auto-detect PEM -> succeeds)
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub").to_str().unwrap())
+            .arg("-o")
+            .arg(ct_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        // Decaps with wrong explicit format (hex) should fail with helpful message
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec").to_str().unwrap())
+            .arg("-i")
+            .arg(ct_path.to_str().unwrap())
+            .arg("-f")
+            .arg("hex")
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("--format"));
+    }
+
+    #[test]
+    fn test_default_output_is_hex() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+
+        // Generate keys without --format (should default to hex)
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(key_path.to_str().unwrap())
+            .assert()
+            .success();
+
+        let pub_content = fs::read_to_string(tmp.path().join("key.pub")).unwrap();
+        let trimmed = pub_content.trim();
+        // Hex output should contain only hex characters
+        assert!(
+            trimmed.chars().all(|c| c.is_ascii_hexdigit()),
+            "Default output should be hex, got: {}...",
+            &trimmed[..trimmed.len().min(40)]
+        );
+    }
 }
 
 mod secret_file {

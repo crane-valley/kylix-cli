@@ -23,6 +23,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | Bench Release Build Fix | HIGH | `--release` missing from external-tool-compare CI job, causing ~100x slowdown vs liboqs |
 | [H-2] Shared Secret Output Control | HIGH | `--secret-file` option for encaps/decaps to write shared secret to file instead of console |
 | [M-2] Split main.rs into Modules | MEDIUM | Split 1256-line main.rs into cli.rs, io.rs, macros.rs, and commands/ directory |
+| [M-3] Input Format Disambiguation | MEDIUM | `--format` now uses `Option<OutputFormat>`: explicit format prevents fallback, None preserves auto-detect |
 
 ---
 
@@ -34,7 +35,6 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | OpenSSL Dedup | LOW | Extract common logic from KEM/SIG benchmark functions |
 | liboqs Parsing | LOW | Parse column headers instead of hardcoded indices |
 | wolfSSL Support | LOW | Add wolfSSL as external benchmark tool |
-| [M-3] Input Format Disambiguation | MEDIUM | Improve hex vs base64 auto-detection for edge cases |
 | [M-4] Deep Zeroization in encode/decode | MEDIUM | Zeroize intermediate strings in `encode_output`/`decode_input` (PEM wrapping, base64) |
 | [L-5] Windows ACL for Secret Keys | LOW | Enforce restrictive ACLs on secret key files on Windows (e.g. `windows-acl` crate) |
 

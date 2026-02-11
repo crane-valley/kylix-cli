@@ -12,7 +12,7 @@ pub(crate) fn cmd_verify(
     pubkey: &PathBuf,
     input: &PathBuf,
     signature: &PathBuf,
-    format: OutputFormat,
+    format: Option<OutputFormat>,
     explicit_algo: Option<Algorithm>,
     verbose: bool,
 ) -> Result<()> {
