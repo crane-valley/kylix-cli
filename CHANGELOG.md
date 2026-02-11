@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-02-11
+
+### Changed
+
+- **kylix-pqc v0.4.5**: Updated to latest library version
+- **SLH-DSA ambiguous variant detection**: `detect_dsa_from_signing_key` / `detect_dsa_from_verification_key` now return an error for ambiguous s/f variants, requiring explicit `--algo`
+
+### Security
+
+- Zeroize encoded secret key string (`sk_encoded`) in `cmd_keygen` after writing to disk
+- Replace manual `.zeroize()` calls with `Zeroizing::new()` wrappers for `ss_bytes` in `cmd_encaps`/`cmd_decaps` and `sk_bytes` in `cmd_decaps`/`cmd_sign`
+
+### Fixed
+
+- Add `eprintln!` warning on non-Unix platforms when secret key file permissions cannot be restricted
+- Use release builds in `external-tool-compare` CI benchmark (was ~100x slower than liboqs due to debug mode)
+- Optimize `kylix-pqc` in dev/test profiles with `opt-level = 2`
+- Use `BTreeMap` instead of `HashMap` in bench comparison tables for deterministic output order
+
+### Added
+
+- SLH-DSA integration tests: 128f sign/verify roundtrip, `--algo` requirement test, and all 6 SLH-DSA variants in `test_keygen_all_algorithms`
+
 ## [0.5.2] - 2026-02-02
 
 ### Changed
@@ -65,7 +88,8 @@ All algorithms from kylix-pqc 0.4.x:
 - **ML-DSA** (FIPS 204): ML-DSA-44, ML-DSA-65, ML-DSA-87
 - **SLH-DSA** (FIPS 205): All SHAKE variants (128s/f, 192s/f, 256s/f)
 
-[Unreleased]: https://github.com/crane-valley/kylix-cli/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/crane-valley/kylix-cli/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/crane-valley/kylix-cli/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/crane-valley/kylix-cli/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/crane-valley/kylix-cli/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/crane-valley/kylix-cli/releases/tag/v0.5.0

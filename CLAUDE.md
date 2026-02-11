@@ -22,10 +22,11 @@ Before committing or creating a PR, always run:
 
 ## Release
 
-- Ensure the `version` in `Cargo.toml` is set to `X.Y.Z` before creating the `vX.Y.Z` tag
-- Create a **tag only** with `git tag vX.Y.Z && git push origin vX.Y.Z`
-  - Do NOT use `gh release create` - cargo-dist creates the release automatically
-- cargo-dist will build binaries and create the GitHub Release with installers
+1. Update `CHANGELOG.md`: move Unreleased items to new `[X.Y.Z]` section, update comparison links
+2. Ensure the `version` in `Cargo.toml` is set to `X.Y.Z` before creating the `vX.Y.Z` tag
+3. Create a **tag only** with `git tag vX.Y.Z && git push origin vX.Y.Z`
+   - Do NOT use `gh release create` - cargo-dist creates the release automatically
+4. cargo-dist will build binaries and create the GitHub Release with installers
 
 ## Dependencies
 
