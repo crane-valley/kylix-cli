@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use std::borrow::Cow;
 use std::fs;
 #[cfg(unix)]
 use std::fs::OpenOptions;
@@ -41,24 +42,48 @@ fn is_hex(s: &str) -> bool {
 fn decode_pem(data: &str) -> Result<Vec<u8>> {
     // Normalize CRLF to LF so that trailing \r doesn't corrupt header/footer
     // checks or base64 body content
-    let normalized;
-    let data = if data.contains('\r') {
-        normalized = data.replace('\r', "");
-        &normalized
+    let data: Cow<str> = if data.contains('\r') {
+        Cow::Owned(data.replace('\r', ""))
     } else {
-        data
+        Cow::Borrowed(data)
     };
     let lines: Vec<&str> = data.lines().collect();
-    if lines.len() < 3
-        || !lines[0].starts_with("-----BEGIN")
-        || !lines.last().unwrap().starts_with("-----END")
-    {
+    if lines.len() < 3 {
         bail!("Invalid PEM format: expected -----BEGIN header, body lines, and -----END footer");
     }
+
+    // Validate and parse the BEGIN line: -----BEGIN <LABEL>-----
+    let begin_line = lines[0];
+    const BEGIN_PREFIX: &str = "-----BEGIN ";
+    const PEM_SUFFIX: &str = "-----";
+    if !begin_line.starts_with(BEGIN_PREFIX) || !begin_line.ends_with(PEM_SUFFIX) {
+        bail!("Invalid PEM header: expected line of the form '-----BEGIN <LABEL>-----'");
+    }
+    let label = &begin_line[BEGIN_PREFIX.len()..begin_line.len() - PEM_SUFFIX.len()];
+    if label.is_empty() {
+        bail!("Invalid PEM header: empty label");
+    }
+
+    // Validate END line exactly matches the parsed label: -----END <LABEL>-----
+    let end_line = lines.last().unwrap();
+    let expected_end = format!("-----END {}-----", label);
+    if *end_line != expected_end {
+        bail!("Invalid PEM footer: expected '{}'", expected_end);
+    }
+
+    // Join all body lines between BEGIN and END as base64 content
     let b64: String = lines[1..lines.len() - 1].join("");
     BASE64
         .decode(&b64)
         .context("Failed to decode PEM base64 content")
+}
+
+/// Build an error message for explicit format decode failures.
+fn format_mismatch_msg(format: &str) -> String {
+    format!(
+        "Failed to decode as {format}. If the input uses a different encoding, \
+         remove --format or set it to the encoding used by the input: hex|base64|pem."
+    )
 }
 
 /// Decode bytes from the given encoding format.
@@ -71,12 +96,8 @@ pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<V
 
     match format {
         Some(OutputFormat::Pem) => decode_pem(data),
-        Some(OutputFormat::Hex) => hex::decode(data).context(
-            "Failed to decode as hex. If the input uses a different encoding, remove --format or set it to the encoding used by the input: hex|base64|pem.",
-        ),
-        Some(OutputFormat::Base64) => BASE64.decode(data).context(
-            "Failed to decode as base64. If the input uses a different encoding, remove --format or set it to the encoding used by the input: hex|base64|pem.",
-        ),
+        Some(OutputFormat::Hex) => hex::decode(data).context(format_mismatch_msg("hex")),
+        Some(OutputFormat::Base64) => BASE64.decode(data).context(format_mismatch_msg("base64")),
         None => {
             // Auto-detect: PEM -> hex -> base64
             if data.starts_with("-----BEGIN") {
@@ -84,7 +105,10 @@ pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<V
             } else if is_hex(data) && data.len() % 2 == 0 {
                 hex::decode(data).context("Failed to decode hex")
             } else {
-                BASE64.decode(data).context("Failed to decode base64")
+                BASE64.decode(data).context(
+                    "Failed to decode as base64. Auto-detection fell back to base64, \
+                     but decoding failed. If you know the input format, try specifying it with --format.",
+                )
             }
         }
     }
