@@ -34,7 +34,7 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: String,
 
-        /// Encoding format (default: hex for output, auto-detect for input)
+        /// Output encoding format (default: hex)
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
     },

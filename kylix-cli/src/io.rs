@@ -57,10 +57,14 @@ fn decode_pem(data: &str) -> Result<Vec<u8>> {
     let begin_line = lines[0];
     const BEGIN_PREFIX: &str = "-----BEGIN ";
     const PEM_SUFFIX: &str = "-----";
-    if !begin_line.starts_with(BEGIN_PREFIX) || !begin_line.ends_with(PEM_SUFFIX) {
-        bail!("Invalid PEM header: expected line of the form '-----BEGIN <LABEL>-----'");
-    }
-    let label = &begin_line[BEGIN_PREFIX.len()..begin_line.len() - PEM_SUFFIX.len()];
+    let label = begin_line
+        .strip_prefix(BEGIN_PREFIX)
+        .and_then(|s| s.strip_suffix(PEM_SUFFIX))
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "Invalid PEM header: expected line of the form '-----BEGIN <LABEL>-----'"
+            )
+        })?;
     if label.is_empty() {
         bail!("Invalid PEM header: empty label");
     }
@@ -81,10 +85,7 @@ fn decode_pem(data: &str) -> Result<Vec<u8>> {
 
 /// Build an error message for explicit format decode failures.
 fn format_mismatch_msg(format: &str) -> String {
-    format!(
-        "Failed to decode as {format}. If the input uses a different encoding, \
-         remove --format or set it to the encoding used by the input: hex|base64|pem."
-    )
+    format!("Failed to decode as {format}. If the input uses a different encoding, remove --format or set it to the encoding used by the input: hex|base64|pem.")
 }
 
 /// Decode bytes from the given encoding format.
@@ -96,7 +97,7 @@ pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<V
     let data = data.trim();
 
     match format {
-        Some(OutputFormat::Pem) => decode_pem(data),
+        Some(OutputFormat::Pem) => decode_pem(data).context(format_mismatch_msg("pem")),
         Some(OutputFormat::Hex) => hex::decode(data).context(format_mismatch_msg("hex")),
         Some(OutputFormat::Base64) => BASE64.decode(data).context(format_mismatch_msg("base64")),
         None => {
