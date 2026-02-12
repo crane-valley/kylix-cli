@@ -83,9 +83,12 @@ fn decode_pem(data: &str) -> Result<Vec<u8>> {
         .context("Failed to decode PEM base64 content")
 }
 
+/// Supported encoding names for error messages.
+const SUPPORTED_ENCODINGS: &str = "hex|base64|pem";
+
 /// Build an error message for explicit format decode failures.
 fn format_mismatch_msg(format: &str) -> String {
-    format!("Failed to decode as {format}. If the input uses a different encoding, remove --format or set it to the encoding used by the input: hex|base64|pem.")
+    format!("Failed to decode as {format}. If the input uses a different encoding, remove --format or set it to the encoding used by the input: {SUPPORTED_ENCODINGS}.")
 }
 
 /// Decode bytes from the given encoding format.
