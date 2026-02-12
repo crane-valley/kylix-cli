@@ -84,7 +84,7 @@ fn decode_pem(data: &str) -> Result<Vec<u8>> {
 }
 
 /// Supported encoding names for error messages.
-const SUPPORTED_ENCODINGS: &str = "hex|base64|pem";
+const SUPPORTED_ENCODINGS: &str = "hex, base64, pem";
 
 /// Build an error message for explicit format decode failures.
 fn format_mismatch_msg(format: &str) -> String {
@@ -100,19 +100,20 @@ pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<V
     let data = data.trim();
 
     match format {
-        Some(OutputFormat::Pem) => decode_pem(data).context(format_mismatch_msg("pem")),
-        Some(OutputFormat::Hex) => hex::decode(data).context(format_mismatch_msg("hex")),
-        Some(OutputFormat::Base64) => BASE64.decode(data).context(format_mismatch_msg("base64")),
+        Some(OutputFormat::Pem) => decode_pem(data).with_context(|| format_mismatch_msg("pem")),
+        Some(OutputFormat::Hex) => hex::decode(data).with_context(|| format_mismatch_msg("hex")),
+        Some(OutputFormat::Base64) => BASE64
+            .decode(data)
+            .with_context(|| format_mismatch_msg("base64")),
         None => {
             // Auto-detect: PEM -> hex -> base64
             if data.starts_with("-----BEGIN") {
-                decode_pem(data)
+                decode_pem(data).context("Auto-detected PEM format, but failed to decode")
             } else if is_all_hex_digits(data) && data.len() % 2 == 0 {
-                hex::decode(data).context("Failed to decode hex")
+                hex::decode(data).context("Auto-detected hex format, but failed to decode")
             } else {
                 BASE64.decode(data).context(
-                    "Failed to decode as base64. Auto-detection fell back to base64, \
-                     but decoding failed. If you know the input format, try specifying it with --format.",
+                    "Auto-detected base64 format, but failed to decode. If you know the input format, try specifying it with --format.",
                 )
             }
         }
