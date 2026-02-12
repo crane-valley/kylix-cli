@@ -33,8 +33,9 @@ pub(crate) fn encode_output(data: &[u8], format: OutputFormat, label: &str) -> S
     }
 }
 
-/// Check if a string is valid hexadecimal
-fn is_hex(s: &str) -> bool {
+/// Check if every character in the string is an ASCII hex digit (0-9, a-f, A-F).
+/// Does NOT check for even length; callers must verify that separately for valid byte encoding.
+fn is_all_hex_digits(s: &str) -> bool {
     !s.is_empty() && s.chars().all(|c| c.is_ascii_hexdigit())
 }
 
@@ -102,7 +103,7 @@ pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<V
             // Auto-detect: PEM -> hex -> base64
             if data.starts_with("-----BEGIN") {
                 decode_pem(data)
-            } else if is_hex(data) && data.len() % 2 == 0 {
+            } else if is_all_hex_digits(data) && data.len() % 2 == 0 {
                 hex::decode(data).context("Failed to decode hex")
             } else {
                 BASE64.decode(data).context(
@@ -298,6 +299,28 @@ mod tests {
         let b64 = BASE64.encode(data);
         let result = decode_input(&b64, None).unwrap();
         assert_eq!(result, data);
+    }
+
+    // --- CRLF handling ---
+
+    #[test]
+    fn decode_pem_with_crlf_line_endings() {
+        let pem = format!(
+            "-----BEGIN TEST KEY-----\r\n{}\r\n-----END TEST KEY-----\r\n",
+            SAMPLE_BASE64
+        );
+        let result = decode_input(&pem, Some(OutputFormat::Pem)).unwrap();
+        assert_eq!(result, SAMPLE_BYTES);
+    }
+
+    // --- Empty / edge-case input ---
+
+    #[test]
+    fn decode_empty_input_auto_detect() {
+        // Empty input: is_all_hex_digits("") returns false, falls through to base64.
+        // BASE64.decode("") returns Ok(vec![]), so this succeeds with empty bytes.
+        let result = decode_input("", None).unwrap();
+        assert!(result.is_empty());
     }
 
     // --- encode_output ---

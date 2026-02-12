@@ -807,6 +807,58 @@ mod format_auto_detection {
     }
 
     #[test]
+    fn test_explicit_pem_roundtrip() {
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_enc_path = tmp.path().join("ss_enc");
+        let ss_dec_path = tmp.path().join("ss_dec");
+
+        // Generate keys in PEM
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(&key_path)
+            .arg("-f")
+            .arg("pem")
+            .assert()
+            .success();
+
+        // Encaps with explicit PEM format
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-o")
+            .arg(&ct_path)
+            .arg("-f")
+            .arg("pem")
+            .arg("--secret-file")
+            .arg(&ss_enc_path)
+            .assert()
+            .success();
+
+        // Decaps with explicit PEM format
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&ct_path)
+            .arg("-f")
+            .arg("pem")
+            .arg("--secret-file")
+            .arg(&ss_dec_path)
+            .assert()
+            .success();
+
+        let ss_enc = fs::read_to_string(&ss_enc_path).unwrap();
+        let ss_dec = fs::read_to_string(&ss_dec_path).unwrap();
+        assert_eq!(
+            ss_enc.trim(),
+            ss_dec.trim(),
+            "Shared secrets should match with explicit PEM format"
+        );
+    }
+
+    #[test]
     fn test_default_output_is_hex() {
         let tmp = TempDir::new().unwrap();
         let key_path = tmp.path().join("key");

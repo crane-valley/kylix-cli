@@ -24,6 +24,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | [H-2] Shared Secret Output Control | HIGH | `--secret-file` option for encaps/decaps to write shared secret to file instead of console |
 | [M-2] Split main.rs into Modules | MEDIUM | Split 1256-line main.rs into cli.rs, io.rs, macros.rs, and commands/ directory |
 | [M-3] Input Format Disambiguation | MEDIUM | `--format` now uses `Option<OutputFormat>`: explicit format prevents fallback, None preserves auto-detect |
+| [L-6] PEM Label Validation | LOW | PR #45 - Validate BEGIN/END labels match exactly in `decode_pem`, reject empty labels and malformed headers/footers |
 
 ---
 
@@ -37,7 +38,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | wolfSSL Support | LOW | Add wolfSSL as external benchmark tool |
 | [M-4] Deep Zeroization in encode/decode | MEDIUM | Zeroize intermediate strings in `encode_output`/`decode_input` (PEM wrapping, base64) |
 | [L-5] Windows ACL for Secret Keys | LOW | Enforce restrictive ACLs on secret key files on Windows (e.g. `windows-acl` crate) |
-| [L-6] PEM Label Validation | LOW | Validate that BEGIN/END labels match in `decode_pem` (e.g. reject `BEGIN X / END Y`). Currently relies on downstream key-size validation as safety net |
+| [L-7] Separate Input/Output Format Flags | LOW | Split `--format` into `--in-format` / `--out-format` so users can read PEM keys and output hex (currently a single flag controls both) |
 
 ---
 
