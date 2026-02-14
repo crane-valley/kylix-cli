@@ -135,11 +135,21 @@ kylix completions powershell >> $PROFILE
 | SLH-DSA-SHAKE-192s/f | Signature | 3 | FIPS 205 |
 | SLH-DSA-SHAKE-256s/f | Signature | 5 | FIPS 205 |
 
-## Output Formats
+## Encoding Formats
 
-- `hex` - Hexadecimal encoding (default)
+- `hex` - Hexadecimal encoding (default output)
 - `base64` - Base64 encoding
-- `pem` - PEM format with headers
+- `pem` - PEM format with algorithm-specific headers
+
+When `--format` is omitted, all inputs are auto-detected (PEM → hex → base64) and output defaults to hex. When `--format` is specified, it applies to all inputs and outputs, disabling auto-detection.
+
+```sh
+# Explicit format (all inputs must be base64, output is base64)
+kylix encaps --pub mykey.pub -o ciphertext.ct -f base64
+
+# No --format: auto-detect all inputs, hex output
+kylix decaps --key mykey.sec -i ciphertext.ct
+```
 
 ## License
 
