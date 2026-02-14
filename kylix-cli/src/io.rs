@@ -1,6 +1,5 @@
 use anyhow::{bail, Context, Result};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-use std::borrow::Cow;
 use std::fs;
 #[cfg(unix)]
 use std::fs::OpenOptions;
@@ -9,6 +8,7 @@ use std::io::Write;
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
+use zeroize::Zeroizing;
 
 use crate::cli::OutputFormat;
 
@@ -40,13 +40,20 @@ fn is_all_hex_digits(s: &str) -> bool {
 }
 
 /// Decode a PEM-encoded string to raw bytes.
+///
+/// Intermediate buffers (CRLF normalization, base64 body) are wrapped in
+/// [`Zeroizing`] so that secret key material is cleared from memory on drop.
 fn decode_pem(data: &str) -> Result<Vec<u8>> {
     // Normalize CRLF to LF so that trailing \r doesn't corrupt header/footer
-    // checks or base64 body content
-    let data: Cow<str> = if data.contains('\r') {
-        Cow::Owned(data.replace('\r', ""))
+    // checks or base64 body content.
+    // Use Zeroizing to clear the intermediate buffer in case the data
+    // contains secret key material.
+    let owned;
+    let data = if data.contains('\r') {
+        owned = Zeroizing::new(data.replace('\r', ""));
+        owned.as_str()
     } else {
-        Cow::Borrowed(data)
+        data
     };
     let lines: Vec<&str> = data.lines().collect();
     if lines.len() < 3 {
@@ -69,6 +76,14 @@ fn decode_pem(data: &str) -> Result<Vec<u8>> {
         bail!("Invalid PEM header: empty label");
     }
 
+    // Reject labels with non-printable or control characters
+    if !label
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == ' ' || c == '-')
+    {
+        bail!("Invalid PEM label: contains disallowed characters");
+    }
+
     // Validate END line exactly matches the parsed label: -----END <LABEL>-----
     let end_line = lines.last().unwrap();
     let expected_end = format!("-----END {}-----", label);
@@ -76,10 +91,11 @@ fn decode_pem(data: &str) -> Result<Vec<u8>> {
         bail!("Invalid PEM footer: expected '{}'", expected_end);
     }
 
-    // Join all body lines between BEGIN and END as base64 content
-    let b64: String = lines[1..lines.len() - 1].join("");
+    // Join all body lines between BEGIN and END as base64 content.
+    // Zeroize in case the body encodes secret key material.
+    let b64 = Zeroizing::new(lines[1..lines.len() - 1].join(""));
     BASE64
-        .decode(&b64)
+        .decode(b64.as_bytes())
         .context("Failed to decode PEM base64 content")
 }
 
@@ -98,6 +114,10 @@ fn format_mismatch_msg(format: &str) -> String {
 /// PEM (by header) -> Hex (all hex chars + even length) -> Base64.
 pub(crate) fn decode_input(data: &str, format: Option<OutputFormat>) -> Result<Vec<u8>> {
     let data = data.trim();
+
+    if data.is_empty() {
+        bail!("Input is empty. Expected hex, base64, or PEM encoded data.");
+    }
 
     match format {
         Some(OutputFormat::Pem) => decode_pem(data).with_context(|| format_mismatch_msg("pem")),
@@ -321,11 +341,25 @@ mod tests {
     // --- Empty / edge-case input ---
 
     #[test]
-    fn decode_empty_input_auto_detect() {
-        // Empty input: is_all_hex_digits("") returns false, falls through to base64.
-        // BASE64.decode("") returns Ok(vec![]), so this succeeds with empty bytes.
-        let result = decode_input("", None).unwrap();
-        assert!(result.is_empty());
+    fn decode_empty_input_returns_error() {
+        let err = decode_input("", None).unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("empty"),
+            "Error should mention empty input: {}",
+            msg
+        );
+    }
+
+    #[test]
+    fn decode_whitespace_only_input_returns_error() {
+        let err = decode_input("  \n\t  ", None).unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("empty"),
+            "Error should mention empty input: {}",
+            msg
+        );
     }
 
     // --- encode_output ---
@@ -353,5 +387,66 @@ mod tests {
         assert!(encoded.ends_with("-----END TEST KEY-----"));
         let decoded = decode_input(&encoded, Some(OutputFormat::Pem)).unwrap();
         assert_eq!(decoded, SAMPLE_BYTES);
+    }
+
+    // --- PEM edge cases ---
+
+    #[test]
+    fn decode_pem_empty_body() {
+        // PEM with no base64 body lines (only BEGIN and END, fewer than 3 lines)
+        let pem = "-----BEGIN KEY-----\n-----END KEY-----";
+        let err = decode_input(pem, Some(OutputFormat::Pem)).unwrap_err();
+        // Use {:#} to include the full anyhow error chain (outer context + inner cause)
+        let msg = format!("{:#}", err);
+        assert!(
+            msg.contains("expected -----BEGIN header, body lines, and -----END footer"),
+            "Should reject PEM with fewer than 3 lines: {}",
+            msg
+        );
+    }
+
+    #[test]
+    fn decode_pem_invalid_base64_body() {
+        let pem = "-----BEGIN KEY-----\n!!!invalid!!!\n-----END KEY-----";
+        let err = decode_input(pem, Some(OutputFormat::Pem)).unwrap_err();
+        let msg = format!("{:#}", err);
+        assert!(
+            msg.contains("base64") || msg.contains("decode"),
+            "Should report base64 decode failure: {}",
+            msg
+        );
+    }
+
+    #[test]
+    fn decode_pem_label_with_control_chars() {
+        let pem = "-----BEGIN TEST\x1bKEY-----\nabc=\n-----END TEST\x1bKEY-----";
+        let err = decode_input(pem, Some(OutputFormat::Pem)).unwrap_err();
+        let msg = format!("{:#}", err);
+        assert!(
+            msg.contains("disallowed characters"),
+            "Should reject label with control chars: {}",
+            msg
+        );
+    }
+
+    #[test]
+    fn decode_pem_mismatched_labels() {
+        let pem = "-----BEGIN FOO-----\nabc=\n-----END BAR-----";
+        let err = decode_input(pem, Some(OutputFormat::Pem)).unwrap_err();
+        let msg = format!("{:#}", err);
+        assert!(
+            msg.contains("footer"),
+            "Should report mismatched BEGIN/END labels: {}",
+            msg
+        );
+    }
+
+    #[test]
+    fn decode_pem_multiline_body() {
+        // Encode enough data to span multiple base64 lines
+        let data = vec![0xABu8; 100];
+        let encoded = encode_output(&data, OutputFormat::Pem, "LARGE KEY");
+        let decoded = decode_input(&encoded, Some(OutputFormat::Pem)).unwrap();
+        assert_eq!(decoded, data);
     }
 }

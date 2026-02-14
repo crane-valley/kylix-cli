@@ -36,9 +36,10 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | OpenSSL Dedup | LOW | Extract common logic from KEM/SIG benchmark functions |
 | liboqs Parsing | LOW | Parse column headers instead of hardcoded indices |
 | wolfSSL Support | LOW | Add wolfSSL as external benchmark tool |
-| [M-4] Deep Zeroization in encode/decode | MEDIUM | Zeroize intermediate strings in `encode_output`/`decode_input` (PEM wrapping, base64) |
+| [M-4] Deep Zeroization in encode_output | MEDIUM | Zeroize intermediate strings in `encode_output` (PEM wrapping, base64). `decode_pem` side done in PR #45. |
 | [L-5] Windows ACL for Secret Keys | LOW | Enforce restrictive ACLs on secret key files on Windows (e.g. `windows-acl` crate) |
 | [L-7] Separate Input/Output Format Flags | LOW | Split `--format` into `--in-format` / `--out-format` so users can read PEM keys and output hex (currently a single flag controls both) |
+| [L-8] Auto-Detection Documentation | LOW | Document hex/base64 auto-detection ambiguity in README (e.g., hex-only strings like "deadbeef" are detected as hex, not base64) |
 
 ---
 

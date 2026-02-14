@@ -34,7 +34,9 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: String,
 
-        /// Output encoding format (default: hex)
+        /// Encoding format for both input and output.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected and output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
     },
@@ -53,7 +55,9 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Encoding format (default: hex for output, auto-detect for input)
+        /// Encoding format for both input and output.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected and output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
     },
@@ -72,7 +76,9 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Encoding format (default: hex for output, auto-detect for input)
+        /// Encoding format for both input and output.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected and output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
     },
@@ -91,7 +97,9 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: PathBuf,
 
-        /// Encoding format (default: hex for output, auto-detect for input)
+        /// Encoding format for both input and output.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected and output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
 
@@ -114,7 +122,9 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         signature: PathBuf,
 
-        /// Input encoding (auto-detect if omitted)
+        /// Encoding format for input files.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
 
