@@ -141,13 +141,13 @@ kylix completions powershell >> $PROFILE
 - `base64` - Base64 encoding
 - `pem` - PEM format with algorithm-specific headers
 
-When `--format` is omitted, output defaults to hex and input is auto-detected (PEM → hex → base64). When `--format` is specified, it applies to both input and output with no auto-detect fallback.
+When `--format` is omitted, all inputs are auto-detected (PEM → hex → base64) and output defaults to hex. When `--format` is specified, it applies to all inputs and outputs, disabling auto-detection.
 
 ```sh
-# Explicit format (input must be base64, output is base64)
+# Explicit format (all inputs must be base64, output is base64)
 kylix encaps --pub mykey.pub -o ciphertext.ct -f base64
 
-# No --format: auto-detect input, hex output
+# No --format: auto-detect all inputs, hex output
 kylix decaps --key mykey.sec -i ciphertext.ct
 ```
 
