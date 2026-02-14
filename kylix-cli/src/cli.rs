@@ -34,9 +34,8 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: String,
 
-        /// Encoding format for both input and output.
-        /// When specified, input must match this format (no auto-detect fallback).
-        /// When omitted, input is auto-detected and output defaults to hex.
+        /// Encoding format for output files.
+        /// When omitted, output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
     },
