@@ -12,22 +12,28 @@ use zeroize::Zeroizing;
 
 use crate::cli::OutputFormat;
 
-/// Encode bytes to the specified format
+/// Encode bytes to the specified format.
+///
+/// Intermediate buffers in the PEM path (base64 string, line-wrapped body) are
+/// wrapped in [`Zeroizing`] so that secret key material is cleared from memory
+/// on drop. Callers encoding sensitive data should also wrap the returned
+/// `String` in `Zeroizing`.
 pub(crate) fn encode_output(data: &[u8], format: OutputFormat, label: &str) -> String {
     match format {
         OutputFormat::Hex => hex::encode(data),
         OutputFormat::Base64 => BASE64.encode(data),
         OutputFormat::Pem => {
-            let b64 = BASE64.encode(data);
-            let wrapped: String = b64
-                .as_bytes()
-                .chunks(64)
-                .map(|chunk| std::str::from_utf8(chunk).expect("BASE64 output is valid ASCII"))
-                .collect::<Vec<_>>()
-                .join("\n");
+            let b64 = Zeroizing::new(BASE64.encode(data));
+            let wrapped = Zeroizing::new(
+                b64.as_bytes()
+                    .chunks(64)
+                    .map(|chunk| std::str::from_utf8(chunk).expect("BASE64 output is valid ASCII"))
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+            );
             format!(
                 "-----BEGIN {}-----\n{}\n-----END {}-----",
-                label, wrapped, label
+                label, *wrapped, label
             )
         }
     }
