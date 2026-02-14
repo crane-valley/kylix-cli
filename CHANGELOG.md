@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - PEM label validation: reject labels with non-printable or control characters
 - Early error for empty input files instead of cryptic algorithm-detection failures
+
+### Security
+
 - Zeroize intermediate buffers in PEM decoding (CRLF normalization, base64 body)
 - Zeroize intermediate buffers in PEM encoding (base64 string, line-wrapped body)
 

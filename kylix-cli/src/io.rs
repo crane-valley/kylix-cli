@@ -17,7 +17,7 @@ use crate::cli::OutputFormat;
 /// Intermediate buffers in the PEM path (base64 string, line-wrapped body) are
 /// wrapped in [`Zeroizing`] so that secret key material is cleared from memory
 /// on drop. Callers encoding sensitive data should also wrap the returned
-/// `String` in `Zeroizing` (all current callers already do this).
+/// `String` in `Zeroizing`.
 pub(crate) fn encode_output(data: &[u8], format: OutputFormat, label: &str) -> String {
     match format {
         OutputFormat::Hex => hex::encode(data),
