@@ -12,7 +12,7 @@ use crate::io::{encode_output, write_secret_file};
 pub(crate) fn cmd_keygen(
     algo: Algorithm,
     output: &str,
-    format: OutputFormat,
+    format: Option<OutputFormat>,
     verbose: bool,
 ) -> Result<()> {
     if verbose {
@@ -41,8 +41,9 @@ pub(crate) fn cmd_keygen(
     let pk_size = pk_bytes.len();
     let sk_size = sk_bytes.len();
 
-    let pk_encoded = encode_output(&pk_bytes, format, pk_label);
-    let sk_encoded = Zeroizing::new(encode_output(&sk_bytes, format, sk_label));
+    let out_format = format.unwrap_or_default();
+    let pk_encoded = encode_output(&pk_bytes, out_format, pk_label);
+    let sk_encoded = Zeroizing::new(encode_output(&sk_bytes, out_format, sk_label));
     // sk_bytes is Zeroizing<Vec<u8>>, automatically zeroized on drop
 
     let pub_path = format!("{}.pub", output);

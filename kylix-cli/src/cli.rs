@@ -34,9 +34,10 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: String,
 
-        /// Output format
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format for output files.
+        /// When omitted, output defaults to hex.
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
     },
 
     /// Encapsulate a shared secret using a public key
@@ -53,9 +54,11 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Output format
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format for both input and output.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected and output defaults to hex.
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
     },
 
     /// Decapsulate a shared secret using a secret key
@@ -72,9 +75,11 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Output format for shared secret
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format for both input and output.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected and output defaults to hex.
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
     },
 
     /// Sign a file using ML-DSA or SLH-DSA
@@ -91,9 +96,11 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: PathBuf,
 
-        /// Output format
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format for both input and output.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected and output defaults to hex.
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
 
         /// Algorithm (required for SLH-DSA to distinguish -s/-f variants)
         #[arg(long, value_enum)]
@@ -114,9 +121,11 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         signature: PathBuf,
 
-        /// Input format for key and signature files
-        #[arg(short, long, value_enum, default_value = "hex")]
-        format: OutputFormat,
+        /// Encoding format for input files.
+        /// When specified, input must match this format (no auto-detect fallback).
+        /// When omitted, input is auto-detected.
+        #[arg(short, long, value_enum)]
+        format: Option<OutputFormat>,
 
         /// Algorithm (required for SLH-DSA to distinguish -s/-f variants)
         #[arg(long, value_enum)]
@@ -445,9 +454,10 @@ impl Algorithm {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, ValueEnum)]
 pub(crate) enum OutputFormat {
     /// Hexadecimal encoding
+    #[default]
     Hex,
     /// Base64 encoding
     Base64,

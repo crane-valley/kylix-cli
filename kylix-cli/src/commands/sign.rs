@@ -13,7 +13,7 @@ pub(crate) fn cmd_sign(
     key: &PathBuf,
     input: &PathBuf,
     output: &PathBuf,
-    format: OutputFormat,
+    format: Option<OutputFormat>,
     explicit_algo: Option<Algorithm>,
     verbose: bool,
 ) -> Result<()> {
@@ -21,6 +21,8 @@ pub(crate) fn cmd_sign(
         Zeroizing::new(fs::read_to_string(key).context("Failed to read signing key file")?);
     let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
     drop(sk_data); // zeroize raw key string immediately after decoding
+
+    let out_format = format.unwrap_or_default();
 
     // Use explicit algorithm if provided, otherwise detect from key size
     let algo = if let Some(a) = explicit_algo {
@@ -114,7 +116,7 @@ pub(crate) fn cmd_sign(
     } else {
         "ML-DSA SIGNATURE"
     };
-    let sig_encoded = encode_output(&sig_bytes, format, sig_label);
+    let sig_encoded = encode_output(&sig_bytes, out_format, sig_label);
     fs::write(output, &sig_encoded).context("Failed to write signature")?;
 
     if verbose {

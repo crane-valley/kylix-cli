@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`--format` flag behavior** (breaking): `--format` now controls both input decoding and output encoding. Previously it only affected output while input was always auto-detected. If you relied on `--format` to set the output format only, remove the flag to restore auto-detect input with hex output, or ensure input files match the specified format.
+
+### Added
+
+- PEM label validation: reject labels with non-printable or control characters
+- Early error for empty input files instead of cryptic algorithm-detection failures
+- Zeroize intermediate buffers in PEM decoding (CRLF normalization, base64 body)
+
 ## [0.5.3] - 2026-02-11
 
 ### Changed
