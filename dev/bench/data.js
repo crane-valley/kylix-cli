@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770800593517,
+  "lastUpdate": 1771068785311,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -14323,6 +14323,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 5040172,
             "range": "± 18271",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2c4e0a7227b46c98e5c039ad71e51f6d5a2047d2",
+          "message": "feat: disambiguate input format with explicit --format option (#45)\n\n* feat: disambiguate input format with explicit --format option\n\nChange --format from OutputFormat (default hex) to Option<OutputFormat>.\nWhen explicitly specified, decode_input uses that format directly without\nfallback, preventing misdetection of base64 data as hex. When omitted,\nauto-detection (PEM -> hex -> base64) is preserved for backward\ncompatibility. Output defaults to hex when --format is not specified.\n\nAdd unit tests for decode_input with explicit/auto-detect modes and\nintegration tests for explicit format roundtrip, format mismatch error\nmessages, and default hex output verification.\n\n* fix: address PR review comments for format disambiguation\n\n- Validate -----END footer in decode_pem (Copilot + Gemini)\n- Use generic error message listing all formats: hex|base64|pem (Copilot)\n- Refactor None branch to if/else if/else expression (Gemini)\n- Use &Path instead of to_str().unwrap() in new integration tests (Copilot)\n- Use input-only help text for verify's --format arg (Copilot)\n\n* refactor: centralize default output format and add PEM validation task\n\n- Extract OutputFormat::DEFAULT constant to avoid repeating Hex default\n  across 4 command files (keygen, encaps, decaps, sign)\n- Add [L-6] PEM Label Validation to PLANS.md for future BEGIN/END\n  label mismatch detection in decode_pem\n\n* fix: address third round of PR review comments\n\n- Handle CRLF line endings in decode_pem by normalizing \\r (Copilot)\n- Replace OutputFormat::DEFAULT with #[derive(Default)] + #[default]\n  and use unwrap_or_default() for idiomatic Rust (Copilot)\n- Fix test_default_output_is_hex: add empty check and use\n  floor_char_boundary for safe string slicing (Copilot)\n\n* fix: clean up error message formatting and test assertion\n\n- Remove line continuation in error messages to avoid embedded\n  indentation spaces in output (Copilot)\n- Simplify test prefix slice to trimmed.get(..40).unwrap_or(trimmed)\n  instead of floor_char_boundary (Copilot)\n\n* fix: stricter PEM validation, Cow normalization, and error message cleanup\n\n- Validate PEM BEGIN/END labels match and reject malformed footers\n- Use Cow<str> for CRLF normalization in decode_pem\n- Extract format_mismatch_msg helper to deduplicate error strings\n- Improve auto-detect base64 fallback error to suggest --format\n\n* refactor: rename is_hex, add review-driven tests, update PLANS.md\n\n- Rename is_hex to is_all_hex_digits for clarity (checks characters,\n  not valid encoding)\n- Add unit tests: CRLF PEM line endings, empty input auto-detection\n- Add integration test: explicit PEM roundtrip (encaps/decaps)\n- PLANS.md: move [L-6] PEM label validation to Completed,\n  add [L-7] separate --in-format/--out-format flags\n\n* fix: address review round 3 — PEM parsing safety, error consistency\n\n- Use strip_prefix/strip_suffix for PEM label extraction instead of\n  byte-index slicing to prevent panics on non-ASCII labels\n- Add .context(format_mismatch_msg(\"pem\")) to explicit PEM arm for\n  consistent error messages across all format branches\n- Remove line-continuation backslash in format_mismatch_msg to avoid\n  embedded indentation whitespace in error output\n- Update keygen --format help text to \"Output encoding format\" since\n  keygen has no input to auto-detect\n\n* refactor: extract SUPPORTED_ENCODINGS constant for error messages\n\n* fix: lazy error alloc, comma-separated formats, auto-detect messages\n\n- Use with_context(|| ...) instead of context(...) to defer String\n  allocation to the error path only\n- Change format list from pipe-separated to comma-separated for\n  user-friendly CLI output\n- Add auto-detection context to PEM and hex error messages for\n  consistency with base64 fallback message\n\n* fix: address review findings for format disambiguation\n\n- Zeroize intermediate buffers in decode_pem (CRLF normalization,\n  base64 body join) to prevent secret key material from lingering\n  in memory\n- Validate PEM labels contain only alphanumeric, space, and hyphen\n  characters to reject control character injection\n- Reject empty input early in decode_input with a clear error message\n  instead of falling through to base64 producing empty bytes\n- Improve --format help text to clarify it controls both input and\n  output encoding, with no auto-detect fallback when specified\n- Document breaking --format behavior change in CHANGELOG\n- Add edge-case tests: empty input, whitespace-only input, empty PEM\n  body, invalid base64 in PEM, control chars in PEM label, mismatched\n  PEM labels, multi-line PEM body\n- Update PLANS.md: narrow [M-4] scope, add [L-8] auto-detection docs\n\n* fix: correct keygen --format help text to output-only context\n\nkeygen has no input decoding, so the help text should not mention\n\"input\" or \"auto-detect\". Updated to \"Encoding format for output files.\"",
+          "timestamp": "2026-02-14T20:26:48+09:00",
+          "tree_id": "59bc951968407b8a16e6f5e6d9f43b295cb5b80b",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/2c4e0a7227b46c98e5c039ad71e51f6d5a2047d2"
+        },
+        "date": 1771068784669,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 63998,
+            "range": "± 110",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 393913,
+            "range": "± 664",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 68694,
+            "range": "± 87",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 115306,
+            "range": "± 101",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 345937,
+            "range": "± 221",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 109098,
+            "range": "± 163",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 177313,
+            "range": "± 284",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 367127,
+            "range": "± 240",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 180614,
+            "range": "± 144",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 18082,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 19957,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 23288,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 30949,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 32693,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 37176,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 48807,
+            "range": "± 29",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 50117,
+            "range": "± 37",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 56227,
+            "range": "± 29",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 2475609,
+            "range": "± 13112",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 57527553,
+            "range": "± 83718",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 3394448,
+            "range": "± 9558",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 3559609,
+            "range": "± 19873",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 92483132,
+            "range": "± 48656",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 4956581,
+            "range": "± 3940",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 9463478,
+            "range": "± 57667",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 191053812,
+            "range": "± 324886",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 5007680,
+            "range": "± 22460",
             "unit": "ns/iter"
           }
         ]
