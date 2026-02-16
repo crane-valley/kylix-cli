@@ -30,7 +30,7 @@ serde_json = "1.0"
 
 # Benchmark-only dependencies
 which = "8.0"
-tempfile = "3.10"
+tempfile = "3.25"
 criterion = { version = "0.8", features = ["html_reports"] }
 
 # Optimize crypto-heavy dependency in dev/test builds.
