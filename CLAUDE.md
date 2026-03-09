@@ -32,3 +32,38 @@ Before committing or creating a PR, always run:
 
 - `kylix-pqc` from crates.io (not path dependency)
 - When updating kylix-pqc version, update `Cargo.toml` workspace dependencies
+
+## CLI Design
+
+### Subcommands
+
+keygen, encaps, decaps, sign, verify, info, completions, bench (feature-gated)
+
+### Input Format Handling (io.rs)
+
+- Auto-detection order: PEM (by header), hex (all hex digits + even length), base64 (fallback)
+- PEM: label validation ensures BEGIN/END labels match exactly
+- `--format` flag for explicit format override (hex/base64/pem)
+
+### Output Security
+
+- Design intent: secret outputs (shared secrets, secret keys) should go to `--secret-file` or stderr, not stdout
+- Current CLI behavior:
+  - `decaps` prints the shared secret to stdout when `--secret-file` is not provided
+  - `encaps` prints the shared secret to stdout when `-o/--output` is set (ciphertext goes to the output file)
+- All sensitive buffers wrapped in `Zeroizing<T>` for automatic drop-based cleanup
+- PEM encoding path uses deep zeroization for intermediate base64 + wrapped strings
+
+### Module Structure
+
+- cli.rs: clap derive-based argument parsing + CLI types/enums (dispatch is in main.rs)
+- commands/: files for most subcommands (bench is in bench.rs, feature-gated)
+- io.rs: hex/base64/PEM encode/decode with zeroization
+- macros.rs: 6 dispatch macros (kem_keygen!, dsa_keygen!, etc.) to deduplicate match arms
+
+### Benchmarking (kylix-bench crate)
+
+- `cargo bench`: Criterion-based microbenchmarks (kylix-bench/benches/)
+- `kylix bench` CLI subcommand: custom runner using kylix-bench report types
+- Comparative benchmarks against liboqs and OpenSSL (via env var tool detection)
+- Dev/test profiles use opt-level=2 for kylix-pqc (avoids ~100x slowdown)
