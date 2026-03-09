@@ -26,6 +26,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | [M-3] Input Format Disambiguation | MEDIUM | `--format` now uses `Option<OutputFormat>`: explicit format prevents fallback, None preserves auto-detect |
 | [L-6] PEM Label Validation | LOW | PR #45 - Validate BEGIN/END labels match exactly in `decode_pem`, reject empty labels and malformed headers/footers |
 | [M-4] Deep Zeroization in encode_output | MEDIUM | Wrap `b64` and `wrapped` intermediates in `Zeroizing` in `encode_output` PEM path. `decode_pem` side done in PR #45. |
+| CLAUDE.md Expansion | LOW | Add CLI design patterns, input format handling, output security, benchmarking guidelines |
 
 ---
 
