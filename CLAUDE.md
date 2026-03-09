@@ -41,13 +41,16 @@ keygen, encaps, decaps, sign, verify, info, completions, bench (feature-gated)
 
 ### Input Format Handling (io.rs)
 
-- Auto-detection: hex if all chars are valid hex digits AND length matches expected size, else base64
+- Auto-detection: hex if all chars are valid hex digits AND length is even, else base64
 - PEM: label validation ensures BEGIN/END labels match exactly
 - `--format` flag for explicit format override (hex/base64/pem)
 
 ### Output Security
 
-- Secret outputs (shared secrets, secret keys) go to `--secret-file` or stderr, not stdout
+- Design intent: secret outputs (shared secrets, secret keys) should go to `--secret-file` or stderr, not stdout
+- Current CLI behavior:
+  - `decaps` prints the shared secret to stdout when `--secret-file` is not provided
+  - `encaps` prints the shared secret to stdout when `-o/--output` is set (ciphertext goes to the output file)
 - All sensitive buffers wrapped in `Zeroizing<T>` for automatic drop-based cleanup
 - PEM encoding path uses deep zeroization for intermediate base64 + wrapped strings
 
