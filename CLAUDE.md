@@ -63,6 +63,7 @@ keygen, encaps, decaps, sign, verify, info, completions, bench (feature-gated)
 
 ### Benchmarking (kylix-bench crate)
 
-- Criterion benchmarks for all algorithms
-- Comparative benchmarks against liboqs (via env var tool detection)
+- `cargo bench`: Criterion-based microbenchmarks (kylix-bench/benches/)
+- `kylix bench` CLI subcommand: custom runner using kylix-bench report types
+- Comparative benchmarks against liboqs and OpenSSL (via env var tool detection)
 - Dev/test profiles use opt-level=2 for kylix-pqc (avoids ~100x slowdown)
