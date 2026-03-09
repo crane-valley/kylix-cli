@@ -41,7 +41,7 @@ keygen, encaps, decaps, sign, verify, info, completions, bench (feature-gated)
 
 ### Input Format Handling (io.rs)
 
-- Auto-detection: hex if all chars are valid hex digits AND length is even, else base64
+- Auto-detection order: PEM (by header), hex (all hex digits + even length), base64 (fallback)
 - PEM: label validation ensures BEGIN/END labels match exactly
 - `--format` flag for explicit format override (hex/base64/pem)
 
@@ -56,8 +56,8 @@ keygen, encaps, decaps, sign, verify, info, completions, bench (feature-gated)
 
 ### Module Structure
 
-- cli.rs: clap derive-based argument parsing + subcommand dispatch
-- commands/: one file per subcommand
+- cli.rs: clap derive-based argument parsing + CLI types/enums (dispatch is in main.rs)
+- commands/: files for most subcommands (bench is in bench.rs, feature-gated)
 - io.rs: hex/base64/PEM encode/decode with zeroization
 - macros.rs: 6 dispatch macros (kem_keygen!, dsa_keygen!, etc.) to deduplicate match arms
 
