@@ -1066,3 +1066,275 @@ mod secret_file {
         assert_eq!(mode, 0o600, "Secret file should have 0o600 permissions");
     }
 }
+
+mod key_format {
+    use super::*;
+
+    #[test]
+    fn test_kem_cross_format_roundtrip() {
+        // PEM keys + hex ciphertext/shared secret
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_enc_path = tmp.path().join("ss_enc");
+        let ss_dec_path = tmp.path().join("ss_dec");
+
+        // Generate keys in PEM
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(&key_path)
+            .arg("-f")
+            .arg("pem")
+            .assert()
+            .success();
+
+        // Encaps: read PEM pub key via --key-format, output hex via --format
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-o")
+            .arg(&ct_path)
+            .arg("--key-format")
+            .arg("pem")
+            .arg("-f")
+            .arg("hex")
+            .arg("--secret-file")
+            .arg(&ss_enc_path)
+            .assert()
+            .success();
+
+        // Verify ciphertext is hex (not PEM)
+        let ct_content = fs::read_to_string(&ct_path).unwrap();
+        assert!(
+            !ct_content.starts_with("-----BEGIN"),
+            "Ciphertext should be hex, not PEM"
+        );
+        assert!(
+            ct_content.trim().chars().all(|c| c.is_ascii_hexdigit()),
+            "Ciphertext should be valid hex"
+        );
+
+        // Decaps: read PEM sec key via --key-format, hex ciphertext via --format
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&ct_path)
+            .arg("--key-format")
+            .arg("pem")
+            .arg("-f")
+            .arg("hex")
+            .arg("--secret-file")
+            .arg(&ss_dec_path)
+            .assert()
+            .success();
+
+        let ss_enc = fs::read_to_string(&ss_enc_path).unwrap();
+        let ss_dec = fs::read_to_string(&ss_dec_path).unwrap();
+        assert_eq!(
+            ss_enc.trim(),
+            ss_dec.trim(),
+            "Shared secrets must match in cross-format roundtrip"
+        );
+    }
+
+    #[test]
+    fn test_dsa_cross_format_roundtrip() {
+        // PEM keys + hex signature
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let msg_path = tmp.path().join("msg.txt");
+        let sig_path = tmp.path().join("sig");
+
+        fs::write(&msg_path, "test message for signing").unwrap();
+
+        // Generate DSA keys in PEM
+        kylix()
+            .args(["keygen", "-a", "ml-dsa-44", "-o"])
+            .arg(&key_path)
+            .arg("-f")
+            .arg("pem")
+            .assert()
+            .success();
+
+        // Sign: PEM key via --key-format, hex signature via --format
+        kylix()
+            .args(["sign", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&msg_path)
+            .arg("-o")
+            .arg(&sig_path)
+            .arg("--key-format")
+            .arg("pem")
+            .arg("-f")
+            .arg("hex")
+            .assert()
+            .success();
+
+        // Verify signature is hex (not PEM)
+        let sig_content = fs::read_to_string(&sig_path).unwrap();
+        assert!(
+            !sig_content.starts_with("-----BEGIN"),
+            "Signature should be hex, not PEM"
+        );
+
+        // Verify: PEM pub key via --key-format, hex signature via --format
+        kylix()
+            .args(["verify", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-i")
+            .arg(&msg_path)
+            .arg("-s")
+            .arg(&sig_path)
+            .arg("--key-format")
+            .arg("pem")
+            .arg("-f")
+            .arg("hex")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("valid"));
+    }
+
+    #[test]
+    fn test_key_format_alone_defaults_output_to_hex() {
+        // --key-format without --format: output should default to hex
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+
+        // Generate keys in PEM
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(&key_path)
+            .arg("-f")
+            .arg("pem")
+            .assert()
+            .success();
+
+        // Encaps with only --key-format (no --format -> hex output)
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-o")
+            .arg(&ct_path)
+            .arg("--key-format")
+            .arg("pem")
+            .assert()
+            .success();
+
+        // Verify output is hex
+        let ct_content = fs::read_to_string(&ct_path).unwrap();
+        assert!(
+            ct_content.trim().chars().all(|c| c.is_ascii_hexdigit()),
+            "Output should default to hex when only --key-format is used"
+        );
+    }
+
+    #[test]
+    fn test_key_format_with_base64_output() {
+        // --key-format pem --format base64
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_enc_path = tmp.path().join("ss_enc");
+        let ss_dec_path = tmp.path().join("ss_dec");
+
+        // Generate keys in PEM
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(&key_path)
+            .arg("-f")
+            .arg("pem")
+            .assert()
+            .success();
+
+        // Encaps: PEM key, base64 output
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-o")
+            .arg(&ct_path)
+            .arg("--key-format")
+            .arg("pem")
+            .arg("-f")
+            .arg("base64")
+            .arg("--secret-file")
+            .arg(&ss_enc_path)
+            .assert()
+            .success();
+
+        // Decaps: PEM key, base64 ciphertext
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&ct_path)
+            .arg("--key-format")
+            .arg("pem")
+            .arg("-f")
+            .arg("base64")
+            .arg("--secret-file")
+            .arg(&ss_dec_path)
+            .assert()
+            .success();
+
+        let ss_enc = fs::read_to_string(&ss_enc_path).unwrap();
+        let ss_dec = fs::read_to_string(&ss_dec_path).unwrap();
+        assert_eq!(
+            ss_enc.trim(),
+            ss_dec.trim(),
+            "Shared secrets must match with PEM keys + base64 ciphertext"
+        );
+    }
+
+    #[test]
+    fn test_format_only_backward_compat() {
+        // Verify that using --format alone (no --key-format) still works
+        let tmp = TempDir::new().unwrap();
+        let key_path = tmp.path().join("key");
+        let ct_path = tmp.path().join("ct");
+        let ss_enc_path = tmp.path().join("ss_enc");
+        let ss_dec_path = tmp.path().join("ss_dec");
+
+        kylix()
+            .args(["keygen", "-a", "ml-kem-768", "-o"])
+            .arg(&key_path)
+            .arg("-f")
+            .arg("pem")
+            .assert()
+            .success();
+
+        kylix()
+            .args(["encaps", "--pub"])
+            .arg(tmp.path().join("key.pub"))
+            .arg("-o")
+            .arg(&ct_path)
+            .arg("-f")
+            .arg("pem")
+            .arg("--secret-file")
+            .arg(&ss_enc_path)
+            .assert()
+            .success();
+
+        kylix()
+            .args(["decaps", "--key"])
+            .arg(tmp.path().join("key.sec"))
+            .arg("-i")
+            .arg(&ct_path)
+            .arg("-f")
+            .arg("pem")
+            .arg("--secret-file")
+            .arg(&ss_dec_path)
+            .assert()
+            .success();
+
+        let ss_enc = fs::read_to_string(&ss_enc_path).unwrap();
+        let ss_dec = fs::read_to_string(&ss_dec_path).unwrap();
+        assert_eq!(
+            ss_enc.trim(),
+            ss_dec.trim(),
+            "Backward compat: --format alone must still work"
+        );
+    }
+}

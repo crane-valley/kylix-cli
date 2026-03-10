@@ -32,10 +32,12 @@ fn main() -> Result<()> {
             output,
             secret_file,
             format,
+            key_format,
         } => cmd_encaps(
             &pubkey,
             output.as_ref(),
             secret_file.as_ref(),
+            key_format,
             format,
             cli.verbose,
         ),
@@ -45,10 +47,12 @@ fn main() -> Result<()> {
             input,
             secret_file,
             format,
+            key_format,
         } => cmd_decaps(
             &key,
             input.as_ref(),
             secret_file.as_ref(),
+            key_format,
             format,
             cli.verbose,
         ),
@@ -58,16 +62,26 @@ fn main() -> Result<()> {
             input,
             output,
             format,
+            key_format,
             algo,
-        } => cmd_sign(&key, &input, &output, format, algo, cli.verbose),
+        } => cmd_sign(&key, &input, &output, key_format, format, algo, cli.verbose),
 
         Commands::Verify {
             pubkey,
             input,
             signature,
             format,
+            key_format,
             algo,
-        } => cmd_verify(&pubkey, &input, &signature, format, algo, cli.verbose),
+        } => cmd_verify(
+            &pubkey,
+            &input,
+            &signature,
+            key_format,
+            format,
+            algo,
+            cli.verbose,
+        ),
 
         Commands::Info => {
             cmd_info();

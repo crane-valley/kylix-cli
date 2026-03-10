@@ -44,6 +44,7 @@ keygen, encaps, decaps, sign, verify, info, completions, bench (feature-gated)
 - Auto-detection order: PEM (by header), hex (all hex digits + even length), base64 (fallback)
 - PEM: label validation ensures BEGIN/END labels match exactly
 - `--format` flag for explicit format override (hex/base64/pem)
+- `--key-format` flag overrides `--format` for key file decoding (enables cross-format workflows)
 
 ### Output Security
 

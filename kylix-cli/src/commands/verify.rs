@@ -12,12 +12,22 @@ pub(crate) fn cmd_verify(
     pubkey: &PathBuf,
     input: &PathBuf,
     signature: &PathBuf,
+    key_format: Option<OutputFormat>,
     format: Option<OutputFormat>,
     explicit_algo: Option<Algorithm>,
     verbose: bool,
 ) -> Result<()> {
     let pk_data = fs::read_to_string(pubkey).context("Failed to read public key file")?;
-    let pk_bytes = decode_input(&pk_data, format)?;
+    let pk_bytes = decode_input(&pk_data, key_format.or(format)).map_err(|e| {
+        if key_format.is_some() {
+            anyhow::anyhow!(
+                "Failed to decode public key. \
+                 Check that --key-format matches the key file encoding."
+            )
+        } else {
+            e
+        }
+    })?;
 
     // Use explicit algorithm if provided, otherwise detect from key size
     let algo = if let Some(a) = explicit_algo {
