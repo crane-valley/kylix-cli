@@ -19,16 +19,16 @@ pub(crate) fn cmd_decaps(
 ) -> Result<()> {
     let sk_data =
         Zeroizing::new(fs::read_to_string(key).context("Failed to read secret key file")?);
-    let sk_bytes = Zeroizing::new(
-        decode_input(&sk_data, key_format.or(format)).with_context(|| {
-            if key_format.is_some() {
-                "Failed to decode secret key. Check that --key-format matches the key file encoding."
-                    .to_string()
-            } else {
-                "Failed to decode secret key file.".to_string()
-            }
-        })?,
-    );
+    let sk_bytes = Zeroizing::new(decode_input(&sk_data, key_format.or(format)).map_err(|e| {
+        if key_format.is_some() {
+            anyhow::anyhow!(
+                "Failed to decode secret key. \
+                     Check that --key-format matches the key file encoding."
+            )
+        } else {
+            e
+        }
+    })?);
     drop(sk_data); // zeroize raw key string immediately after decoding
 
     let out_format = format.unwrap_or_default();

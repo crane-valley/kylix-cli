@@ -27,6 +27,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | [L-6] PEM Label Validation | LOW | PR #45 - Validate BEGIN/END labels match exactly in `decode_pem`, reject empty labels and malformed headers/footers |
 | [M-4] Deep Zeroization in encode_output | MEDIUM | Wrap `b64` and `wrapped` intermediates in `Zeroizing` in `encode_output` PEM path. `decode_pem` side done in PR #45. |
 | CLAUDE.md Expansion | LOW | Add CLI design patterns, input format handling, output security, benchmarking guidelines |
+| [L-7] Key-Specific Format Override | LOW | PR #62 - `--key-format` flag to override `--format` for key file decoding, enabling cross-format workflows (e.g. PEM keys + hex ciphertext) |
 
 ---
 
@@ -39,7 +40,6 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | liboqs Parsing | LOW | Parse column headers instead of hardcoded indices |
 | wolfSSL Support | LOW | Add wolfSSL as external benchmark tool |
 | [L-5] Windows ACL for Secret Keys | LOW | Enforce restrictive ACLs on secret key files on Windows (e.g. `windows-acl` crate) |
-| [L-7] Key-Specific Format Override | LOW | Add `--key-format` flag to override `--format` for key file decoding, enabling cross-format workflows (e.g. PEM keys + hex ciphertext) |
 | [L-8] Auto-Detection Documentation | LOW | Document hex/base64 auto-detection ambiguity in README (e.g., hex-only strings like "deadbeef" are detected as hex, not base64) |
 
 ---

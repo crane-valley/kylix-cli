@@ -54,8 +54,8 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Encoding format for all artifacts.
-        /// When specified, input must match this format (no auto-detect fallback).
+        /// Encoding format for all artifacts (except key files when --key-format is set).
+        /// When specified, non-key inputs must match this format (no auto-detect fallback).
         /// When omitted, input is auto-detected and output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
@@ -80,8 +80,8 @@ pub(crate) enum Commands {
         #[arg(long = "secret-file")]
         secret_file: Option<PathBuf>,
 
-        /// Encoding format for all artifacts.
-        /// When specified, input must match this format (no auto-detect fallback).
+        /// Encoding format for all artifacts (except key files when --key-format is set).
+        /// When specified, non-key inputs must match this format (no auto-detect fallback).
         /// When omitted, input is auto-detected and output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
@@ -106,8 +106,8 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         output: PathBuf,
 
-        /// Encoding format for all artifacts.
-        /// When specified, input must match this format (no auto-detect fallback).
+        /// Encoding format for all artifacts (except key files when --key-format is set).
+        /// When specified, non-key inputs must match this format (no auto-detect fallback).
         /// When omitted, input is auto-detected and output defaults to hex.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,
@@ -136,8 +136,8 @@ pub(crate) enum Commands {
         #[arg(short, long)]
         signature: PathBuf,
 
-        /// Encoding format for all input files.
-        /// When specified, input must match this format (no auto-detect fallback).
+        /// Encoding format for all input files (except key files when --key-format is set).
+        /// When specified, non-key inputs must match this format (no auto-detect fallback).
         /// When omitted, input is auto-detected.
         #[arg(short, long, value_enum)]
         format: Option<OutputFormat>,

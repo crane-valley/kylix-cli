@@ -18,12 +18,14 @@ pub(crate) fn cmd_verify(
     verbose: bool,
 ) -> Result<()> {
     let pk_data = fs::read_to_string(pubkey).context("Failed to read public key file")?;
-    let pk_bytes = decode_input(&pk_data, key_format.or(format)).with_context(|| {
+    let pk_bytes = decode_input(&pk_data, key_format.or(format)).map_err(|e| {
         if key_format.is_some() {
-            "Failed to decode public key. Check that --key-format matches the key file encoding."
-                .to_string()
+            anyhow::anyhow!(
+                "Failed to decode public key. \
+                 Check that --key-format matches the key file encoding."
+            )
         } else {
-            "Failed to decode public key file.".to_string()
+            e
         }
     })?;
 
