@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1773148351943,
+  "lastUpdate": 1773148390979,
   "repoUrl": "https://github.com/crane-valley/kylix-cli",
   "entries": {
     "Benchmark (x86_64-linux)": [
@@ -10229,6 +10229,192 @@ window.BENCHMARK_DATA = {
             "name": "SLH-DSA-SHAKE-256f/verify",
             "value": 8032802,
             "range": "± 44353",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kiyoaki.tsurutani@gmail.com",
+            "name": "Kiyoaki Tsurutani",
+            "username": "kiyoaki"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "99b0f322ec74b78fac1e483552fecdf75c3255d8",
+          "message": "feat: add --key-format flag for cross-format key decoding (#62)\n\n* feat: add --key-format flag for cross-format key decoding (#48)\n\nAdd `--key-format` flag to encaps, decaps, sign, and verify commands.\nThis flag overrides `--format` for key file decoding only, enabling\ncross-format workflows (e.g. PEM keys with hex ciphertext).\n\nResolution logic: `key_format.or(format)` for key files, `format`\nfor all other artifacts. Error messages reference `--key-format`\nwhen the flag was explicitly provided.\n\n* fix: replace inner error when --key-format is active\n\nWhen --key-format is used and key decoding fails, use map_err to\nreplace the inner error entirely instead of chaining with\nwith_context. This prevents the confusing \"remove --format\" message\nfrom decode_input when the relevant flag is --key-format.\n\nAlso update --format doc comments to note the --key-format exception,\nand move [L-7] to the Completed section in PLANS.md.",
+          "timestamp": "2026-03-10T22:06:36+09:00",
+          "tree_id": "4e48621c647d0be42e7443a729182d8a8e2a147b",
+          "url": "https://github.com/crane-valley/kylix-cli/commit/99b0f322ec74b78fac1e483552fecdf75c3255d8"
+        },
+        "date": 1773148390419,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-DSA-44/keygen",
+            "value": 96542,
+            "range": "± 986",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/sign",
+            "value": 785662,
+            "range": "± 1865",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-44/verify",
+            "value": 116049,
+            "range": "± 1071",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/keygen",
+            "value": 175995,
+            "range": "± 597",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/sign",
+            "value": 683979,
+            "range": "± 974",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-65/verify",
+            "value": 185743,
+            "range": "± 301",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/keygen",
+            "value": 265553,
+            "range": "± 1018",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/sign",
+            "value": 696900,
+            "range": "± 1421",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-DSA-87/verify",
+            "value": 301634,
+            "range": "± 1055",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/keygen",
+            "value": 25347,
+            "range": "± 247",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/encaps",
+            "value": 32758,
+            "range": "± 98",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-512/decaps",
+            "value": 39778,
+            "range": "± 90",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/keygen",
+            "value": 44072,
+            "range": "± 70",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/encaps",
+            "value": 53127,
+            "range": "± 178",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-768/decaps",
+            "value": 62121,
+            "range": "± 139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/keygen",
+            "value": 70480,
+            "range": "± 255",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/encaps",
+            "value": 79728,
+            "range": "± 266",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM-1024/decaps",
+            "value": 91307,
+            "range": "± 401",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/keygen",
+            "value": 3532329,
+            "range": "± 63600",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/sign",
+            "value": 82099892,
+            "range": "± 168056",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f/verify",
+            "value": 4848948,
+            "range": "± 101518",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/keygen",
+            "value": 5119928,
+            "range": "± 106748",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/sign",
+            "value": 132507062,
+            "range": "± 340583",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f/verify",
+            "value": 7090434,
+            "range": "± 31642",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/keygen",
+            "value": 13454073,
+            "range": "± 34885",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/sign",
+            "value": 270632778,
+            "range": "± 1761735",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f/verify",
+            "value": 7104040,
+            "range": "± 15335",
             "unit": "ns/iter"
           }
         ]
