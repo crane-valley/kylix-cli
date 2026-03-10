@@ -12,11 +12,19 @@ pub(crate) fn cmd_encaps(
     pubkey: &PathBuf,
     output: Option<&PathBuf>,
     secret_file: Option<&PathBuf>,
+    key_format: Option<OutputFormat>,
     format: Option<OutputFormat>,
     verbose: bool,
 ) -> Result<()> {
     let pk_data = fs::read_to_string(pubkey).context("Failed to read public key file")?;
-    let pk_bytes = decode_input(&pk_data, format)?;
+    let pk_bytes = decode_input(&pk_data, key_format.or(format)).with_context(|| {
+        if key_format.is_some() {
+            "Failed to decode public key. Check that --key-format matches the key file encoding."
+                .to_string()
+        } else {
+            "Failed to decode public key file.".to_string()
+        }
+    })?;
 
     let out_format = format.unwrap_or_default();
 

@@ -143,12 +143,18 @@ kylix completions powershell >> $PROFILE
 
 When `--format` is omitted, all inputs are auto-detected (PEM → hex → base64) and output defaults to hex. When `--format` is specified, it applies to all inputs and outputs, disabling auto-detection.
 
+Use `--key-format` to read key files in a different format from other artifacts. This is useful when keys are stored in PEM but ciphertexts or signatures use hex or base64. `--key-format` overrides `--format` for key file decoding only.
+
 ```sh
 # Explicit format (all inputs must be base64, output is base64)
 kylix encaps --pub mykey.pub -o ciphertext.ct -f base64
 
 # No --format: auto-detect all inputs, hex output
 kylix decaps --key mykey.sec -i ciphertext.ct
+
+# PEM keys with hex ciphertext (cross-format)
+kylix encaps --pub mykey.pub -o ct.hex --key-format pem -f hex
+kylix decaps --key mykey.sec -i ct.hex --key-format pem -f hex
 ```
 
 ## License

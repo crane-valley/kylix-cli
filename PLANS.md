@@ -39,7 +39,7 @@ CLI tool for kylix-pqc post-quantum cryptography library.
 | liboqs Parsing | LOW | Parse column headers instead of hardcoded indices |
 | wolfSSL Support | LOW | Add wolfSSL as external benchmark tool |
 | [L-5] Windows ACL for Secret Keys | LOW | Enforce restrictive ACLs on secret key files on Windows (e.g. `windows-acl` crate) |
-| [L-7] Separate Input/Output Format Flags | LOW | Split `--format` into `--in-format` / `--out-format` so users can read PEM keys and output hex (currently a single flag controls both) |
+| [L-7] Key-Specific Format Override | LOW | Add `--key-format` flag to override `--format` for key file decoding, enabling cross-format workflows (e.g. PEM keys + hex ciphertext) |
 | [L-8] Auto-Detection Documentation | LOW | Document hex/base64 auto-detection ambiguity in README (e.g., hex-only strings like "deadbeef" are detected as hex, not base64) |
 
 ---

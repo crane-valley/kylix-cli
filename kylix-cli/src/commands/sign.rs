@@ -13,13 +13,23 @@ pub(crate) fn cmd_sign(
     key: &PathBuf,
     input: &PathBuf,
     output: &PathBuf,
+    key_format: Option<OutputFormat>,
     format: Option<OutputFormat>,
     explicit_algo: Option<Algorithm>,
     verbose: bool,
 ) -> Result<()> {
     let sk_data =
         Zeroizing::new(fs::read_to_string(key).context("Failed to read signing key file")?);
-    let sk_bytes = Zeroizing::new(decode_input(&sk_data, format)?);
+    let sk_bytes = Zeroizing::new(
+        decode_input(&sk_data, key_format.or(format)).with_context(|| {
+            if key_format.is_some() {
+                "Failed to decode signing key. Check that --key-format matches the key file encoding."
+                    .to_string()
+            } else {
+                "Failed to decode signing key file.".to_string()
+            }
+        })?,
+    );
     drop(sk_data); // zeroize raw key string immediately after decoding
 
     let out_format = format.unwrap_or_default();
