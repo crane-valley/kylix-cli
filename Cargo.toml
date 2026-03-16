@@ -18,7 +18,7 @@ kylix-pqc = "0.4"
 kylix-bench = { path = "kylix-bench", version = "0.5.3" }
 
 # CLI dependencies
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.6", features = ["derive"] }
 clap_complete = "4.5"
 hex = "0.4"
 base64 = "0.22"
