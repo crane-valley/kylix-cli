@@ -33,7 +33,7 @@ which = { workspace = true, optional = true }
 tempfile = { workspace = true, optional = true }
 
 [dev-dependencies]
-assert_cmd = "2.0"
+assert_cmd = "2.2"
 predicates = "3.1"
 tempfile.workspace = true
 serde_json.workspace = true
