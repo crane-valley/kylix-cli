@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context, Result};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use super::{ExternalBenchResult, ExternalTool};
@@ -170,21 +171,7 @@ pub(super) fn run_liboqs_sig_benchmark(
         _ => return Ok(vec![]),
     };
 
-    // Find speed_sig (should be in same directory as speed_kem)
-    // Use platform-appropriate executable name
-    let speed_sig_name = if cfg!(windows) {
-        "speed_sig.exe"
-    } else {
-        "speed_sig"
-    };
-    let speed_sig_path = tool.path.parent().map(|p| p.join(speed_sig_name));
-    let speed_sig = speed_sig_path
-        .filter(|p| p.exists())
-        .or_else(|| which::which("speed_sig").ok());
-
-    let Some(sig_path) = speed_sig else {
-        return Ok(vec![]);
-    };
+    let sig_path = find_speed_sig(&tool.path, || which::which("speed_sig").ok())?;
 
     // Convert iterations to approximate duration (min 1s)
     let duration = std::cmp::max(1, iterations / LIBOQS_SIG_OPS_PER_SEC);
@@ -207,6 +194,24 @@ pub(super) fn run_liboqs_sig_benchmark(
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     parse_liboqs_output(&stdout, &tool.name, algo)
+}
+
+fn find_speed_sig<F>(speed_kem_path: &Path, fallback: F) -> Result<PathBuf>
+where
+    F: FnOnce() -> Option<PathBuf>,
+{
+    let speed_sig_name = if cfg!(windows) {
+        "speed_sig.exe"
+    } else {
+        "speed_sig"
+    };
+
+    speed_kem_path
+        .parent()
+        .map(|parent| parent.join(speed_sig_name))
+        .filter(|path| path.exists())
+        .or_else(fallback)
+        .ok_or_else(|| anyhow!("liboqs speed_sig executable not found"))
 }
 
 /// Parse liboqs speed_kem/speed_sig output
@@ -254,6 +259,16 @@ fn parse_liboqs_output(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn find_speed_sig_reports_a_missing_executable() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let speed_kem = temp_dir.path().join("speed_kem");
+
+        let error = find_speed_sig(&speed_kem, || None).unwrap_err();
+
+        assert_eq!(error.to_string(), "liboqs speed_sig executable not found");
+    }
 
     #[test]
     fn parse_liboqs_output_accepts_all_supported_operations() {
