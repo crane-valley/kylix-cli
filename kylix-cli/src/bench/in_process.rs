@@ -38,7 +38,7 @@ fn bench_kem_variant<K: Kem>(algo_name: &str, iterations: u64) -> Vec<BenchmarkR
     {
         let mut bench_rng = rng();
         let times = run_benchmark(iterations, || {
-            let _ = K::keygen(&mut bench_rng);
+            K::keygen(&mut bench_rng).unwrap();
         });
         results.push(BenchmarkResult::new(
             algo_name, "keygen", iterations, &times,
@@ -51,7 +51,7 @@ fn bench_kem_variant<K: Kem>(algo_name: &str, iterations: u64) -> Vec<BenchmarkR
         let (_dk, ek) = K::keygen(&mut setup_rng).unwrap();
         let mut bench_rng = rng();
         let times = run_benchmark(iterations, || {
-            let _ = K::encaps(&ek, &mut bench_rng);
+            K::encaps(&ek, &mut bench_rng).unwrap();
         });
         results.push(BenchmarkResult::new(
             algo_name, "encaps", iterations, &times,
@@ -64,7 +64,7 @@ fn bench_kem_variant<K: Kem>(algo_name: &str, iterations: u64) -> Vec<BenchmarkR
         let (dk, ek) = K::keygen(&mut setup_rng).unwrap();
         let (ct, _) = K::encaps(&ek, &mut setup_rng).unwrap();
         let times = run_benchmark(iterations, || {
-            let _ = K::decaps(&dk, &ct);
+            K::decaps(&dk, &ct).unwrap();
         });
         results.push(BenchmarkResult::new(
             algo_name, "decaps", iterations, &times,
@@ -97,7 +97,7 @@ fn bench_dsa_variant<S: Signer>(
     {
         let mut bench_rng = rng();
         let times = run_benchmark(iterations, || {
-            let _ = S::keygen(&mut bench_rng);
+            S::keygen(&mut bench_rng).unwrap();
         });
         results.push(BenchmarkResult::new(
             algo_name, "keygen", iterations, &times,
@@ -109,7 +109,7 @@ fn bench_dsa_variant<S: Signer>(
         let mut setup_rng = rng();
         let (sk, _vk) = S::keygen(&mut setup_rng).unwrap();
         let times = run_benchmark(iterations, || {
-            let _ = S::sign(&sk, message);
+            S::sign(&sk, message).unwrap();
         });
         results.push(BenchmarkResult::new(algo_name, "sign", iterations, &times));
     }
@@ -120,7 +120,7 @@ fn bench_dsa_variant<S: Signer>(
         let (sk, vk) = S::keygen(&mut setup_rng).unwrap();
         let sig = S::sign(&sk, message).unwrap();
         let times = run_benchmark(iterations, || {
-            let _ = S::verify(&vk, message, &sig);
+            S::verify(&vk, message, &sig).unwrap();
         });
         results.push(BenchmarkResult::new(
             algo_name, "verify", iterations, &times,
