@@ -4,6 +4,10 @@ use std::collections::BTreeMap;
 use super::external::ExternalBenchResult;
 use super::ReportFormat;
 
+fn duration_as_microseconds(duration: std::time::Duration) -> f64 {
+    duration.as_nanos() as f64 / 1000.0
+}
+
 /// Format comparison table
 pub(super) fn format_comparison_table(
     kylix_results: &[BenchmarkResult],
@@ -16,10 +20,11 @@ pub(super) fn format_comparison_table(
     // Add Kylix results
     for r in kylix_results {
         let algo = r.algorithm.clone();
-        by_algo
-            .entry(algo)
-            .or_default()
-            .push(("Kylix", &r.operation, r.mean.as_micros() as f64));
+        by_algo.entry(algo).or_default().push((
+            "Kylix",
+            &r.operation,
+            duration_as_microseconds(r.mean),
+        ));
     }
 
     // Add external results
@@ -183,7 +188,7 @@ fn format_comparison_json(
                 "tool": "Kylix",
                 "algorithm": r.algorithm,
                 "operation": r.operation,
-                "mean_us": r.mean.as_micros(),
+                "mean_us": duration_as_microseconds(r.mean),
                 "notes": "in-process benchmark"
             })
         })
@@ -227,16 +232,20 @@ mod tests {
     use super::*;
     use std::time::Duration;
 
-    fn kylix_result(algorithm: &str, operation: &str, mean_us: u64) -> BenchmarkResult {
+    fn kylix_result_with_mean(algorithm: &str, operation: &str, mean: Duration) -> BenchmarkResult {
         BenchmarkResult {
             algorithm: algorithm.to_string(),
             operation: operation.to_string(),
             iterations: 1,
-            total_time: Duration::from_micros(mean_us),
-            mean: Duration::from_micros(mean_us),
+            total_time: mean,
+            mean,
             std_dev: Duration::ZERO,
-            throughput: 1_000_000.0 / mean_us as f64,
+            throughput: 1.0 / mean.as_secs_f64(),
         }
+    }
+
+    fn kylix_result(algorithm: &str, operation: &str, mean_us: u64) -> BenchmarkResult {
+        kylix_result_with_mean(algorithm, operation, Duration::from_micros(mean_us))
     }
 
     fn external_result(
@@ -273,7 +282,7 @@ mod tests {
                 "tool": "Kylix",
                 "algorithm": "ML-KEM-512",
                 "operation": "keygen",
-                "mean_us": 10,
+                "mean_us": 10.0,
                 "notes": "in-process benchmark"
             })
         );
@@ -297,6 +306,26 @@ mod tests {
                 "notes": "in-process benchmark via native speed tool"
             })
         );
+    }
+
+    #[test]
+    fn comparison_outputs_preserve_fractional_microseconds() {
+        let kylix = vec![kylix_result_with_mean(
+            "ML-KEM-512",
+            "keygen",
+            Duration::from_nanos(500),
+        )];
+        let external = vec![external_result("liboqs", "ML-KEM-512", "keygen", 1.0)];
+
+        let text = format_comparison_table(&kylix, &external, ReportFormat::Text);
+        let markdown = format_comparison_table(&kylix, &external, ReportFormat::Markdown);
+        let json = format_comparison_table(&kylix, &external, ReportFormat::Json);
+        let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+        assert!(text.contains("keygen: 0.5 µs"));
+        assert!(text.contains("keygen: 1.0 µs (Kylix 2.0x faster)"));
+        assert!(markdown.contains("| Kylix | 0.5 µs |"));
+        assert_eq!(value["results"][0]["mean_us"], serde_json::json!(0.5));
     }
 
     #[test]

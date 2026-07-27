@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use std::fs;
 use std::process::Command;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use super::{ExternalBenchResult, ExternalTool};
 
@@ -126,7 +126,11 @@ where
     for _ in 0..iterations {
         operation()?;
     }
-    Ok(start.elapsed().as_micros() as f64 / iterations as f64)
+    Ok(mean_microseconds(start.elapsed(), iterations))
+}
+
+fn mean_microseconds(elapsed: Duration, iterations: u64) -> f64 {
+    elapsed.as_nanos() as f64 / 1000.0 / iterations as f64
 }
 
 /// Run OpenSSL KEM benchmark (time individual operations)
@@ -315,6 +319,11 @@ pub(super) fn run_openssl_sig_benchmark(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mean_microseconds_preserves_fractional_precision() {
+        assert_eq!(mean_microseconds(Duration::from_nanos(1500), 2), 0.75);
+    }
 
     #[test]
     fn time_openssl_operation_runs_the_requested_iterations() {
