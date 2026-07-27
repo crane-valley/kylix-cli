@@ -79,7 +79,7 @@ pub(crate) fn cmd_decaps(
             eprintln!("Shared secret written to: {}", sf_path.display());
         }
     } else {
-        println!("{}", &*ss_encoded);
+        println!("{}", ss_encoded.as_str());
     }
     drop(ss_encoded); // zeroize encoded shared secret immediately after output
 
