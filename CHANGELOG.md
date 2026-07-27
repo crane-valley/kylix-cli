@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Source `kylix-pqc` from the public Kylix repository at the reviewed v0.4.5 commit now that the crate is no longer distributed through crates.io
 - **`--format` flag behavior** (breaking): `--format` now controls both input decoding and output encoding. Previously it only affected output while input was always auto-detected. If you relied on `--format` to set the output format only, remove the flag to restore auto-detect input with hex output, or ensure input files match the specified format.
 
 ### Added
