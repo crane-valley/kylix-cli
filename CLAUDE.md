@@ -6,7 +6,7 @@
 
 ## Related Repository
 
-- Library: [crane-valley/kylix](https://github.com/crane-valley/kylix) (kylix-pqc on crates.io)
+- Library: [crane-valley/kylix](https://github.com/crane-valley/kylix) (`kylix-pqc` Git dependency)
 
 ## CI Notes
 
@@ -30,8 +30,8 @@ Before committing or creating a PR, always run:
 
 ## Dependencies
 
-- `kylix-pqc` from crates.io (not path dependency)
-- When updating kylix-pqc version, update `Cargo.toml` workspace dependencies
+- `kylix-pqc` is pinned to a reviewed commit from the public Kylix repository
+- When updating `kylix-pqc`, update its version and full commit SHA together in the workspace dependencies
 
 ## CLI Design
 
